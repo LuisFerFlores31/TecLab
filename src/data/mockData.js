@@ -7,12 +7,12 @@ export const recentActivity = [
 ];
 
 export const inventoryItems = [
-  { id: 'ITM-001', name: 'Pipetas de 10ml', category: 'Vidriería', storage: 'Estante A-3', status: 'Normal' },
-  { id: 'ITM-002', name: 'Reactivo Químico X', category: 'Reactivos', storage: 'Refrigerador B-1', status: 'Review' },
-  { id: 'ITM-003', name: 'Tubos de Ensayo', category: 'Vidriería', storage: 'Estante A-5', status: 'Normal' },
-  { id: 'ITM-004', name: 'Guantes de Nitrilo', category: 'Equipo de Protección', storage: 'Almacén C-2', status: 'Normal' },
-  { id: 'ITM-005', name: 'Placas Petri', category: 'Consumibles', storage: 'Estante B-4', status: 'Normal' },
-  { id: 'ITM-006', name: 'Ácido Sulfúrico 1M', category: 'Reactivos', storage: 'Gabinete Seguro', status: 'Review' },
-  { id: 'ITM-007', name: 'Microscopio Digital', category: 'Equipos', storage: 'Laboratorio 101', status: 'Normal' },
-  { id: 'ITM-008', name: 'Matraz Aforado 250ml', category: 'Vidriería', storage: 'Estante A-2', status: 'Normal' }
+  { id: 'ITM-001', name: 'Pipetas de 10ml', category: 'Vidriería', storage: 'Aulas 4', status: 'Normal' },
+  { id: 'ITM-002', name: 'Reactivo Químico X', category: 'Reactivos', storage: 'Aulas 4 IBT', status: 'Review' },
+  { id: 'ITM-003', name: 'Tubos de Ensayo', category: 'Vidriería', storage: 'Aulas 4 IBT', status: 'Normal' },
+  { id: 'ITM-004', name: 'Guantes de Nitrilo', category: 'Equipo de Protección', storage: 'Aulas 4 IBT', status: 'Normal' },
+  { id: 'ITM-005', name: 'Placas Petri', category: 'Consumibles', storage: 'Biblioteca', status: 'Normal' },
+  { id: 'ITM-006', name: 'Ácido Sulfúrico 1M', category: 'Reactivos', storage: 'Aulas 4 IBT', status: 'Review' },
+  { id: 'ITM-007', name: 'Microscopio Digital', category: 'Equipos', storage: 'Aulas 2', status: 'Normal' },
+  { id: 'ITM-008', name: 'Matraz Aforado 250ml', category: 'Vidriería', storage: 'Aulas 4 IBT', status: 'Normal' }
 ];
