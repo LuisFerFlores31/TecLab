@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import { Home, Package, PlusCircle, BarChart2, AlertTriangle, Settings, LogOut } from 'lucide-react';
 import './Sidebar.css';
 
-export default function Sidebar() {
+export default function Sidebar({ onLogout }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
@@ -40,7 +40,7 @@ export default function Sidebar() {
       </nav>
 
       <div className="sidebar-footer">
-        <button className="logout-btn">
+        <button className="logout-btn" onClick={onLogout}>
           <LogOut size={20} />
           <span>Logout</span>
         </button>
