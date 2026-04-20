@@ -1,0 +1,46 @@
+.add-user {
+  display: flex;
+  flex-direction: column;
+}
+
+.add-user-card {
+  max-width: 700px;
+  padding: 2.5rem;
+}
+
+.add-user-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1.5rem;
+}
+
+.add-user-icon {
+  color: var(--primary);
+  background: var(--secondary);
+  padding: 8px;
+  border-radius: 50%;
+}
+
+.user-form {
+  gap: 1.5rem;
+}
+
+.hint {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.success-msg {
+  background-color: var(--success-bg);
+  color: var(--success);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}

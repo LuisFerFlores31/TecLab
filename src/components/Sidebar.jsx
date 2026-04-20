@@ -1,8 +1,8 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Package, PlusCircle, BarChart2, AlertTriangle, Settings, LogOut } from 'lucide-react';
+import { Home, Package, PlusCircle, BarChart2, AlertTriangle, Settings, LogOut, Users } from 'lucide-react';
 import './Sidebar.css';
 
-export default function Sidebar({ onLogout }) {
+export default function Sidebar({ user, onLogout }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
@@ -25,6 +25,12 @@ export default function Sidebar({ onLogout }) {
           <PlusCircle size={20} />
           <span>Add New</span>
         </NavLink>
+        {user?.role === 'Director' && (
+          <NavLink to="/users" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
+            <Users size={20} />
+            <span>Add User</span>
+          </NavLink>
+        )}
         <div className="nav-item disabled">
           <BarChart2 size={20} />
           <span>Analytics</span>

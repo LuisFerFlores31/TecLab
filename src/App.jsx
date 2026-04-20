@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard';
 import Inventory from './pages/Inventory';
 import AddAsset from './pages/AddAsset';
 import Login from './pages/Login';
+import AddUser from './pages/AddUser';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -16,10 +17,11 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Layout onLogout={() => setUser(null)} />}>
+        <Route path="/" element={<Layout user={user} onLogout={() => setUser(null)} />}>
           <Route index element={<Dashboard />} />
           <Route path="inventory" element={<Inventory />} />
           <Route path="add" element={<AddAsset />} />
+          <Route path="users" element={<AddUser user={user} />} />
         </Route>
       </Routes>
     </Router>

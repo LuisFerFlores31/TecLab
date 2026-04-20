@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { usersData } from '../data/usersData';
+import { getUsers } from '../data/usersData';
 import './Login.css';
 
 export default function Login({ onLogin }) {
@@ -12,7 +12,7 @@ export default function Login({ onLogin }) {
     setError(''); // Clear previous error
 
     // Validate if the user exists
-    const userFound = usersData.find(
+    const userFound = getUsers().find(
       (u) => u.email === email && u.password === password
     );
 

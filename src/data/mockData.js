@@ -16,3 +16,5 @@ export const inventoryItems = [
   { id: 'ITM-007', name: 'Microscopio Digital', category: 'Equipos', storage: 'Aulas 2', status: 'Normal' },
   { id: 'ITM-008', name: 'Matraz Aforado 250ml', category: 'Vidriería', storage: 'Aulas 4 IBT', status: 'Normal' }
 ];
+
+//Estructura: id, name, category, storage (location), status. Fecha de mantenimeinto, Description, image, quantity 
