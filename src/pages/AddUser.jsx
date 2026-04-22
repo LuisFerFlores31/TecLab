@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { UserPlus, Save } from 'lucide-react';
-import { getUsers, addUser } from '../data/usersData';
+import { getUsers, addUser } from '../../server/data/usersData';
 import { Navigate } from 'react-router-dom';
 import './AddUser.css';
 

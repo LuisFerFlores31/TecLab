@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getUsers } from '../data/usersData';
+import { getUsers } from '../../server/data/usersData';
 import './Login.css';
 
 export default function Login({ onLogin }) {
@@ -31,26 +31,26 @@ export default function Login({ onLogin }) {
           <p>Tec de Monterrey</p>
           <span className="login-subtitle">Acceso de Personal</span>
         </div>
-        
+
         <form className="login-form" onSubmit={handleSubmit}>
           {error && <div className="login-error">{error}</div>}
-          
+
           <div className="form-group">
             <label>Correo Institucional</label>
-            <input 
-              type="email" 
-              placeholder="usuario@tec.mx" 
+            <input
+              type="email"
+              placeholder="usuario@tec.mx"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
           </div>
-          
+
           <div className="form-group">
             <label>Contraseña</label>
-            <input 
-              type="password" 
-              placeholder="••••••••" 
+            <input
+              type="password"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

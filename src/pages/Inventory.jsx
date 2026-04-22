@@ -1,5 +1,5 @@
 import { Search, Filter, Download, Eye } from 'lucide-react';
-import { inventoryItems } from '../data/mockData';
+import { inventoryItems } from '../../server/data/mockData';
 import './Inventory.css';
 
 export default function Inventory() {
@@ -16,7 +16,7 @@ export default function Inventory() {
             <Search className="search-icon" size={18} />
             <input type="text" placeholder="Search by item name or ID..." />
           </div>
-          
+
           <div className="filters">
             <div className="filter-select">
               <Filter size={16} />

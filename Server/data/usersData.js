@@ -7,11 +7,11 @@ const defaultUsers = [
 export const getUsers = () => {
   // Comprobamos si la memoria local (localStorage) del navegador ya tiene guardados usuarios
   const storedUsers = localStorage.getItem('tec_lab_users');
-  
+
   if (storedUsers) {
     return JSON.parse(storedUsers);
   }
-  
+
   // Si no hay nada guardado aún, usamos nuestra lista por defecto y la guardamos en la memoria local
   localStorage.setItem('tec_lab_users', JSON.stringify(defaultUsers));
   return defaultUsers;
@@ -23,3 +23,7 @@ export const addUser = (newUser) => {
   // Al agregar un usuario, actualizamos directamente la memoria local para que no se borre
   localStorage.setItem('tec_lab_users', JSON.stringify(currentUsers));
 };
+
+//tabla de roles
+
+//tabla de usuarios nueva

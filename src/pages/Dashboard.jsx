@@ -1,5 +1,5 @@
 import { Package, AlertCircle, Clock } from 'lucide-react';
-import { recentActivity } from '../data/mockData';
+import { recentActivity } from '../../server/data/mockData';
 import './Dashboard.css';
 
 export default function Dashboard() {
