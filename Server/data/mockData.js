@@ -6,15 +6,38 @@ export const recentActivity = [
   { id: 5, user: 'Luis Torres', action: 'Updated Storage Location', time: '8 hours ago', type: 'update' }
 ];
 
-export const inventoryItems = [
-  { id: 'ITM-001', name: 'Pipetas de 10ml', category: 'Vidriería', storage: 'Aulas 4', status: 'Normal' },
-  { id: 'ITM-002', name: 'Reactivo Químico X', category: 'Reactivos', storage: 'Aulas 4 IBT', status: 'Review' },
-  { id: 'ITM-003', name: 'Tubos de Ensayo', category: 'Vidriería', storage: 'Aulas 4 IBT', status: 'Normal' },
-  { id: 'ITM-004', name: 'Guantes de Nitrilo', category: 'Equipo de Protección', storage: 'Aulas 4 IBT', status: 'Normal' },
-  { id: 'ITM-005', name: 'Placas Petri', category: 'Consumibles', storage: 'Biblioteca', status: 'Normal' },
-  { id: 'ITM-006', name: 'Ácido Sulfúrico 1M', category: 'Reactivos', storage: 'Aulas 4 IBT', status: 'Review' },
-  { id: 'ITM-007', name: 'Microscopio Digital', category: 'Equipos', storage: 'Aulas 2', status: 'Normal' },
-  { id: 'ITM-008', name: 'Matraz Aforado 250ml', category: 'Vidriería', storage: 'Aulas 4 IBT', status: 'Normal' }
+export let inventoryItems = [
+  { id: 'ITM-001', name: 'Pipetas de 10ml', category: 'Vidriería', storage: 'Aulas 4', status: 'Normal', quantity: 15 },
+  { id: 'ITM-002', name: 'Reactivo Químico X', category: 'Reactivos', storage: 'Aulas 4 IBT', status: 'Review', quantity: 5 },
+  { id: 'ITM-003', name: 'Tubos de Ensayo', category: 'Vidriería', storage: 'Aulas 4 IBT', status: 'Normal', quantity: 120 },
+  { id: 'ITM-004', name: 'Guantes de Nitrilo', category: 'Equipo de Protección', storage: 'Aulas 4 IBT', status: 'Normal', quantity: 200 },
+  { id: 'ITM-005', name: 'Placas Petri', category: 'Consumibles', storage: 'Biblioteca', status: 'Normal', quantity: 45 },
+  { id: 'ITM-006', name: 'Ácido Sulfúrico 1M', category: 'Reactivos', storage: 'Aulas 4 IBT', status: 'Review', quantity: 8 },
+  { id: 'ITM-007', name: 'Microscopio Digital', category: 'Equipos', storage: 'Aulas 2', status: 'Normal', quantity: 12 },
+  { id: 'ITM-008', name: 'Matraz Aforado 250ml', category: 'Vidriería', storage: 'Aulas 4 IBT', status: 'Normal', quantity: 32 }
 ];
 
-//Estructura: id, name, category, storage (location), status. Fecha de mantenimeinto, Description, image, quantity 
+//FUNCIONES DE API PARA FUTURA MIGRACIÓN A POSTGRES
+
+export const getInventory = () => {
+  return [...inventoryItems];
+};
+
+export const getInventoryById = (id) => {
+  return inventoryItems.find(item => item.id === id);
+};
+
+export const addInventoryItem = (item) => {
+  inventoryItems.push(item);
+};
+
+export const updateInventoryItem = (id, updatedItem) => {
+  const index = inventoryItems.findIndex(item => item.id === id);
+  if (index !== -1) {
+    inventoryItems[index] = { ...inventoryItems[index], ...updatedItem };
+  }
+};
+
+export const deleteInventoryItem = (id) => {
+  inventoryItems = inventoryItems.filter(item => item.id !== id);
+};

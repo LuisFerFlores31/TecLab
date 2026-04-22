@@ -25,10 +25,10 @@ export default function Sidebar({ user, onLogout }) {
           <PlusCircle size={20} />
           <span>Add New</span>
         </NavLink>
-        {user?.role === 'Director' && (
+        {user?.role === 'Coordinador' && (
           <NavLink to="/users" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
             <Users size={20} />
-            <span>Add User</span>
+            <span>Manage Users</span>
           </NavLink>
         )}
         <div className="nav-item disabled">

@@ -3,9 +3,15 @@
   flex-direction: column;
 }
 
-.add-user-card {
-  max-width: 700px;
-  padding: 2.5rem;
+.users-crud-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.add-user-card, .users-list-card {
+  padding: 2rem;
 }
 
 .add-user-header {
@@ -20,12 +26,12 @@
 .add-user-icon {
   color: var(--primary);
   background: var(--secondary);
-  padding: 8px;
+  padding: 6px;
   border-radius: 50%;
 }
 
 .user-form {
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .hint {
@@ -43,4 +49,75 @@
   margin-bottom: 1.5rem;
   font-weight: 500;
   border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.users-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.user-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--secondary);
+}
+
+.current-user {
+  border-color: var(--primary);
+  background-color: rgba(0, 56, 130, 0.05); /* very light blue */
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.user-name {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.you-badge {
+  font-size: 0.7rem;
+  background-color: var(--primary);
+  color: white;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  margin-left: 0.5rem;
+}
+
+.user-email {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.user-role {
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-block;
+  margin-top: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  background-color: var(--border-color);
+  border-radius: 4px;
+  width: max-content;
+}
+
+.user-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-icon.danger {
+  color: var(--danger);
+  border-color: var(--danger-bg);
+}
+
+.btn-icon.danger:hover {
+  background-color: var(--danger-bg);
 }
