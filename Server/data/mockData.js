@@ -7,14 +7,14 @@ export const recentActivity = [
 ];
 
 export let inventoryItems = [
-  { id: 'ITM-001', name: 'Pipetas de 10ml', category: 'Vidriería', storage: 'Aulas 4', status: 'Normal', quantity: 15 },
-  { id: 'ITM-002', name: 'Reactivo Químico X', category: 'Reactivos', storage: 'Aulas 4 IBT', status: 'Review', quantity: 5 },
-  { id: 'ITM-003', name: 'Tubos de Ensayo', category: 'Vidriería', storage: 'Aulas 4 IBT', status: 'Normal', quantity: 120 },
-  { id: 'ITM-004', name: 'Guantes de Nitrilo', category: 'Equipo de Protección', storage: 'Aulas 4 IBT', status: 'Normal', quantity: 200 },
-  { id: 'ITM-005', name: 'Placas Petri', category: 'Consumibles', storage: 'Biblioteca', status: 'Normal', quantity: 45 },
-  { id: 'ITM-006', name: 'Ácido Sulfúrico 1M', category: 'Reactivos', storage: 'Aulas 4 IBT', status: 'Review', quantity: 8 },
-  { id: 'ITM-007', name: 'Microscopio Digital', category: 'Equipos', storage: 'Aulas 2', status: 'Normal', quantity: 12 },
-  { id: 'ITM-008', name: 'Matraz Aforado 250ml', category: 'Vidriería', storage: 'Aulas 4 IBT', status: 'Normal', quantity: 32 }
+  { id: 'ITM-001', name: 'Pipetas de 10ml', category: 'Vidriería', storage: 'Aulas 4', status: 'Normal', quantity: 15, lab_id: 'LAB-01' },
+  { id: 'ITM-002', name: 'Reactivo Químico X', category: 'Reactivos', storage: 'Aulas 4 IBT', status: 'Review', quantity: 5, lab_id: 'LAB-02' },
+  { id: 'ITM-003', name: 'Tubos de Ensayo', category: 'Vidriería', storage: 'Aulas 4 IBT', status: 'Normal', quantity: 120, lab_id: 'LAB-01' },
+  { id: 'ITM-004', name: 'Guantes de Nitrilo', category: 'Equipo de Protección', storage: 'Aulas 4 IBT', status: 'Normal', quantity: 200, lab_id: 'LAB-03' },
+  { id: 'ITM-005', name: 'Placas Petri', category: 'Consumibles', storage: 'Biblioteca', status: 'Normal', quantity: 45, lab_id: 'LAB-01' },
+  { id: 'ITM-006', name: 'Ácido Sulfúrico 1M', category: 'Reactivos', storage: 'Aulas 4 IBT', status: 'Review', quantity: 8, lab_id: 'LAB-02' },
+  { id: 'ITM-007', name: 'Microscopio Digital', category: 'Equipos', storage: 'Aulas 2', status: 'Normal', quantity: 12, lab_id: 'LAB-01' },
+  { id: 'ITM-008', name: 'Matraz Aforado 250ml', category: 'Vidriería', storage: 'Aulas 4 IBT', status: 'Normal', quantity: 32, lab_id: 'LAB-01' }
 ];
 
 //FUNCIONES DE API PARA FUTURA MIGRACIÓN A POSTGRES

@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Package, PlusCircle, BarChart2, AlertTriangle, Settings, LogOut, Users } from 'lucide-react';
+import { Home, Package, PlusCircle, BarChart2, AlertTriangle, Settings, LogOut, Users, Beaker } from 'lucide-react';
 import './Sidebar.css';
 
 export default function Sidebar({ user, onLogout }) {
@@ -26,19 +26,25 @@ export default function Sidebar({ user, onLogout }) {
           <span>Add New</span>
         </NavLink>
         {user?.role === 'Coordinador' && (
-          <NavLink to="/users" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
-            <Users size={20} />
-            <span>Manage Users</span>
-          </NavLink>
+          <>
+            <NavLink to="/users" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
+              <Users size={20} />
+              <span>Manage Users</span>
+            </NavLink>
+            <NavLink to="/labs" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
+              <Beaker size={20} />
+              <span>Manage Labs</span>
+            </NavLink>
+          </>
         )}
         <div className="nav-item disabled">
           <BarChart2 size={20} />
           <span>Analytics</span>
         </div>
-        <div className="nav-item disabled">
+        <NavLink to="/alerts" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
           <AlertTriangle size={20} />
           <span>Alerts</span>
-        </div>
+        </NavLink>
         <div className="nav-item disabled">
           <Settings size={20} />
           <span>Settings</span>

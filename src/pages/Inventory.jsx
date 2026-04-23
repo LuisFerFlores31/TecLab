@@ -64,6 +64,7 @@ export default function Inventory() {
                 <th>Item ID</th>
                 <th>Name</th>
                 <th>Category</th>
+                <th>Lab ID</th>
                 <th>Quantity</th>
                 <th>Storage Location</th>
                 <th>Status</th>
@@ -76,6 +77,7 @@ export default function Inventory() {
                   <td className="item-id">{item.id}</td>
                   <td className="item-name">{item.name}</td>
                   <td>{item.category}</td>
+                  <td style={{fontWeight: 500}}>{item.lab_id}</td>
                   <td>{item.quantity}</td>
                   <td>{item.storage}</td>
                   <td>

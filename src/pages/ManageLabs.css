@@ -1,0 +1,6 @@
+/* Reuse AddUser CSS Layout */
+.manage-labs .user-role {
+  background-color: var(--primary-bg, #e0e7ff);
+  color: var(--primary);
+  margin-left: 0.5rem;
+}

@@ -13,6 +13,7 @@ export default function AddAsset() {
   const [name, setName] = useState('');
   const [category, setCategory] = useState('');
   const [quantity, setQuantity] = useState('');
+  const [labId, setLabId] = useState('');
   const [serialNumber, setSerialNumber] = useState('');
   const [storage, setStorage] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
@@ -27,6 +28,7 @@ export default function AddAsset() {
         setName(itemToEdit.name || '');
         setCategory(itemToEdit.category || '');
         setQuantity(itemToEdit.quantity || '');
+        setLabId(itemToEdit.lab_id || '');
         setSerialNumber(itemToEdit.serialNumber || '');
         setStorage(itemToEdit.storage || '');
         setExpiryDate(itemToEdit.expiryDate || '');
@@ -47,6 +49,7 @@ export default function AddAsset() {
       name,
       category,
       quantity: Number(quantity),
+      lab_id: labId,
       serialNumber,
       storage,
       expiryDate,
@@ -121,6 +124,16 @@ export default function AddAsset() {
 
             <div className="form-split">
               <div className="form-group">
+                <label>Lab ID <span className="required">*</span></label>
+                <input
+                  type="text"
+                  placeholder="e.g., LAB-01"
+                  value={labId}
+                  onChange={(e) => setLabId(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="form-group">
                 <label>Serial Number</label>
                 <input
                   type="text"
@@ -129,6 +142,9 @@ export default function AddAsset() {
                   onChange={(e) => setSerialNumber(e.target.value)}
                 />
               </div>
+            </div>
+
+            <div className="form-split">
               <div className="form-group">
                 <label>Storage Location <span className="required">*</span></label>
                 <input
