@@ -1,6 +1,8 @@
 const defaultUsers = [
   { id: 1, email: 'coordinador@tec.mx', password: 'admin', role: 'Coordinador', name: 'Laura Martinez' },
-  { id: 2, email: 'laboratorista@tec.mx', password: '123', role: 'Laboratorista', name: 'Diego Sanchez' }
+  { id: 2, email: 'laboratorista@tec.mx', password: '123', role: 'Laboratorista', name: 'Diego Sanchez' },
+  { id: 3, email: 'IBT@tec.mx', password: 'beto', role: 'Laboratorista', name: 'Alma' },
+  { id: 4, email: 'ITC@tec.mx', password: '123', role: 'Laboratorista', name: 'Fer' }
 ];
 
 export const getUsers = () => {
@@ -8,7 +10,16 @@ export const getUsers = () => {
   const storedUsers = localStorage.getItem('tec_lab_users');
 
   if (storedUsers) {
-    return JSON.parse(storedUsers);
+    let parsed = JSON.parse(storedUsers);
+    
+    // Sincroniza si añadiste usuarios manualmente al código defaultUsers
+    const newDefaults = defaultUsers.filter(du => !parsed.some(pu => pu.email === du.email));
+    if (newDefaults.length > 0) {
+      parsed = [...parsed, ...newDefaults];
+      localStorage.setItem('tec_lab_users', JSON.stringify(parsed));
+    }
+    
+    return parsed;
   }
 
   // Si no hay nada guardado aún, se usa la lista por defecto y se guarda en el localStorage

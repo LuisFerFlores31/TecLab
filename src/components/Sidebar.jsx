@@ -37,14 +37,14 @@ export default function Sidebar({ user, onLogout }) {
             </NavLink>
           </>
         )}
-        <div className="nav-item disabled">
-          <BarChart2 size={20} />
-          <span>Analytics</span>
-        </div>
         <NavLink to="/alerts" className={({ isActive }) => (isActive ? 'nav-item active' : 'nav-item')}>
           <AlertTriangle size={20} />
           <span>Alerts</span>
         </NavLink>
+        <div className="nav-item disabled">
+          <BarChart2 size={20} />
+          <span>Historial</span>
+        </div>
         <div className="nav-item disabled">
           <Settings size={20} />
           <span>Settings</span>
