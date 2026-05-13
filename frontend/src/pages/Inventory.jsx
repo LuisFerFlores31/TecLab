@@ -1,7 +1,7 @@
 import { Search, Filter, Download, Edit, Trash2, Eye } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getInventory, deleteInventoryItem } from '../../server/data/mockData';
+import { getInventory, deleteInventoryItem } from '../data/mockData';
 import './Inventory.css';
 
 export default function Inventory() {

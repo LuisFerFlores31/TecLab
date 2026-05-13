@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Beaker, Save, Edit, Trash2 } from 'lucide-react';
-import { getLabs, addLab, updateLab, deleteLab } from '../../server/data/labsData';
+import { getLabs, addLab, updateLab, deleteLab } from '../data/labsData';
 import { Navigate } from 'react-router-dom';
 import './ManageLabs.css'; // Mismo diseño grid que Manage Users
 

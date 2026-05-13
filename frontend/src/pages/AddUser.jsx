@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { UserPlus, Save, Edit, Trash2 } from 'lucide-react';
-import { getUsers, addUser, updateUser, deleteUser } from '../../server/data/usersData';
+import { getUsers, addUser, updateUser, deleteUser } from '../data/usersData';
 import { Navigate } from 'react-router-dom';
 import './AddUser.css';
 

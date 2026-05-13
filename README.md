@@ -13,23 +13,10 @@ Este sistema fue diseñado para optimizar y digitalizar el control de inventario
 * **Gestión de Inventario:** Control detallado de equipo, reactivos y herramientas con seguimiento de existencias.
 * **Sistema de Préstamos:** Registro automatizado de salida y entrada de materiales para evitar pérdidas.
 * **Reportes en Tiempo Real:** Visualización del estado actual y disponibilidad del laboratorio.
-* **Roles de Usuario:** Acceso diferenciado para administradores (profesores/técnicos) y alumnos.
+* **Roles de Usuario:** Acceso diferenciado para administradores (profesores/técnicos) 
 
-## 🛠️ Stack Tecnológico
-| Tecnología | Uso |
-| :--- | :--- |
-| **Python** | Lógica del backend y procesamiento de datos. |
-| **MySQL / SQLite** | Gestión de base de datos relacional y persistencia. |
-| **Markdown** | Documentación técnica y reportes. |
+
 
 ## 👥 El Equipo: "Los Makuins"
 Este proyecto fue desarrollado como parte de una colaboración académica por:
-* **[Tu Nombre]** – Desarrollo de Software y Arquitectura.
-* **[Nombre de tu compañero]** – Colaborador de Proyecto.
 
-## 📁 Estructura del Repositorio
-```bash
-├── src/                # Código fuente del sistema
-├── docs/               # Documentación, diagramas y manuales
-├── database/           # Scripts de SQL y esquemas de BD
-└── README.md           # Documentación principal

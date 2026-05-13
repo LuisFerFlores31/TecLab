@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { getUsers } from '../../server/data/usersData';
+import { getUsers } from '../data/usersData';
 import './Login.css';
 
 export default function Login({ onLogin }) {

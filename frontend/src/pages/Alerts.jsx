@@ -1,7 +1,7 @@
 import { AlertTriangle, Edit } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getInventory } from '../../server/data/mockData';
+import { getInventory } from '../data/mockData';
 import './Inventory.css'; // Reusing Inventory styles as the table layout is the same
 
 export default function Alerts() {

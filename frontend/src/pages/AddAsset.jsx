@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Upload, Save } from 'lucide-react';
-import { getInventoryById, addInventoryItem, updateInventoryItem } from '../../server/data/mockData';
+import { getInventoryById, addInventoryItem, updateInventoryItem } from '../data/mockData';
 import './AddAsset.css';
 
 export default function AddAsset() {
