@@ -12,7 +12,6 @@ dist
 dist-ssr
 *.local
 
-node_modules/
 .vite/
 dist/
 
@@ -26,3 +25,38 @@ dist/
 *.njsproj
 *.sln
 *.sw?
+
+# Dependencies
+frontend/node_modules/
+backend/node_modules/
+
+# Environment
+.env
+frontend/.env
+backend/.env
+frontend/.env.production
+
+# Build
+frontend/dist/
+
+# Uploads (no al repo, viven en Docker volume)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Prisma
+backend/prisma/migrations/migration_lock.toml
+
+# Nunca al repo
+.env
+frontend/.env
+frontend/.env.production
+backend/.env
+
