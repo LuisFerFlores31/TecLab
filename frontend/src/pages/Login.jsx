@@ -1,27 +1,27 @@
-import { useState } from 'react';
-import { getUsers } from '../data/usersData';
-import './Login.css';
+import { useState } from 'react'
+import { useAuth } from '../context/AuthContext'
+import './Login.css'
 
-export default function Login({ onLogin }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+export default function Login() {
+  const { login } = useAuth()
+  const [email,    setEmail]    = useState('')
+  const [password, setPassword] = useState('')
+  const [error,    setError]    = useState('')
+  const [loading,  setLoading]  = useState(false)
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setError(''); // Clear previous error
-
-    // Validate if the user exists
-    const userFound = getUsers().find(
-      (u) => u.email === email && u.password === password
-    );
-
-    if (userFound) {
-      onLogin(userFound); // Set user session in App.jsx
-    } else {
-      setError('Credenciales incorrectas. Verifica tu email y contraseña.');
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
+    try {
+      await login(email, password)
+      // App.jsx redirige solo cuando user cambia
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="login-container">
@@ -41,7 +41,7 @@ export default function Login({ onLogin }) {
               type="email"
               placeholder="usuario@tec.mx"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               required
             />
           </div>
@@ -52,16 +52,16 @@ export default function Login({ onLogin }) {
               type="password"
               placeholder="••••••••"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               required
             />
           </div>
 
-          <button type="submit" className="btn-primary login-btn">
-            Iniciar Sesión
+          <button type="submit" className="btn-primary login-btn" disabled={loading}>
+            {loading ? 'Entrando...' : 'Iniciar Sesión'}
           </button>
         </form>
       </div>
     </div>
-  );
+  )
 }

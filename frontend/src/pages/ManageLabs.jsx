@@ -1,207 +1,106 @@
-import { useState, useEffect } from 'react';
-import { Beaker, Save, Edit, Trash2 } from 'lucide-react';
-import { getLabs, addLab, updateLab, deleteLab } from '../data/labsData';
-import { Navigate } from 'react-router-dom';
-import './ManageLabs.css'; // Mismo diseño grid que Manage Users
+import { useState, useEffect } from 'react'
+import { Beaker, Save, Trash2 } from 'lucide-react'
+import { api } from '../api/client'
+import './ManageLabs.css'
 
-export default function ManageLabs({ user }) {
-  const [labsList, setLabsList] = useState([]);
-  const [editingId, setEditingId] = useState(null);
+export default function ManageLabs() {
+  const [labsList, setLabsList]   = useState([])
+  const [depts,    setDepts]      = useState([])
+  const [name,     setName]       = useState('')
+  const [deptId,   setDeptId]     = useState('')
+  const [success,  setSuccess]    = useState('')
+  const [error,    setError]      = useState('')
 
-  const [labId, setLabId] = useState('');
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [area, setArea] = useState('');
-  const [coordinador, setCoordinador] = useState('');
-  const [success, setSuccess] = useState('');
-
-  // Proteger la ruta: Si no es Coordinador, redirigir al Dashboard
-  if (!user || user.role !== 'Coordinador') {
-    return <Navigate to="/" />;
+  async function loadLabs() {
+    try { setLabsList(await api.get('/labs')) } catch (err) { setError(err.message) }
   }
 
-  const loadLabs = () => {
-    setLabsList(getLabs());
-  };
+  async function loadDepts() {
+    try { setDepts(await api.get('/departments')) } catch (err) { console.error(err) }
+  }
 
-  useEffect(() => {
-    loadLabs();
-  }, []);
+  useEffect(() => { loadLabs(); loadDepts() }, [])
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setSuccess('');
-
-    if (editingId) {
-      // Modo Edición
-      updateLab(editingId, { name, description, area, coordinador });
-      setSuccess(`¡Laboratorio ${name} actualizado exitosamente!`);
-    } else {
-      // Modo Creación
-      const currentLabs = getLabs();
-      const exists = currentLabs.find(l => l.lab_id === labId);
-      if (exists) {
-        alert('Ese Lab ID ya se encuentra registrado. Utiliza un ID diferente.');
-        return;
-      }
-
-      const newLab = {
-        lab_id: labId,
-        name,
-        description,
-        area,
-        coordinador
-      };
-      addLab(newLab);
-      setSuccess(`¡Laboratorio ${name} agregado exitosamente!`);
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setSuccess(''); setError('')
+    try {
+      await api.post('/labs', { name, departmentId: parseInt(deptId) })
+      setSuccess(`Laboratorio ${name} registrado.`)
+      setName(''); setDeptId('')
+      loadLabs()
+    } catch (err) {
+      setError(err.message)
     }
-    
-    // Limpiar y recargar
-    handleCancel();
-    loadLabs();
-  };
+  }
 
-  const handleEdit = (lab) => {
-    setEditingId(lab.lab_id);
-    setLabId(lab.lab_id);
-    setName(lab.name);
-    setDescription(lab.description);
-    setArea(lab.area);
-    setCoordinador(lab.coordinador);
-    setSuccess('');
-  };
-
-  const handleDelete = (lab_id) => {
-    if (window.confirm("¿Estás seguro de que deseas eliminar este laboratorio? Los activos podrían quedar sin laboratorio asignado.")) {
-      deleteLab(lab_id);
-      loadLabs();
-      if (editingId === lab_id) handleCancel();
+  async function handleDelete(id) {
+    if (!window.confirm('¿Eliminar laboratorio? Los assets quedarán como baja.')) return
+    try {
+      await api.delete(`/labs/${id}`)
+      loadLabs()
+    } catch (err) {
+      setError(err.message)
     }
-  };
-
-  const handleCancel = () => {
-    setEditingId(null);
-    setLabId('');
-    setName('');
-    setDescription('');
-    setArea('');
-    setCoordinador('');
-  };
+  }
 
   return (
     <div className="add-user manage-labs">
       <div className="page-header">
         <h1>Manage Laboratories</h1>
-        <p>Register, edit, or remove laboratories</p>
+        <p>Register or remove laboratories</p>
       </div>
 
       <div className="users-crud-container">
-        {/* Formulario (Crear/Editar) */}
         <div className="card add-user-card">
           <div className="add-user-header">
             <Beaker size={32} className="add-user-icon" />
-            <h2 className="card-title">{editingId ? 'Edit Laboratory' : 'New Laboratory Details'}</h2>
+            <h2 className="card-title">New Laboratory</h2>
           </div>
-          
+
           {success && <div className="success-msg">{success}</div>}
+          {error   && <div className="login-error">{error}</div>}
 
           <form className="asset-form user-form" onSubmit={handleSubmit}>
-            <div className="form-split">
-              <div className="form-group">
-                <label>Lab ID <span className="required">*</span></label>
-                <input 
-                  type="text" 
-                  placeholder="e.g., LAB-05" 
-                  value={labId}
-                  onChange={(e) => setLabId(e.target.value)}
-                  disabled={Boolean(editingId)} // No se puede editar la llave primaria
-                  required 
-                />
-              </div>
-              <div className="form-group">
-                <label>Laboratory Name <span className="required">*</span></label>
-                <input 
-                  type="text" 
-                  placeholder="e.g., Laboratorio Central" 
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-split">
-              <div className="form-group">
-                <label>Area / Location</label>
-                <input 
-                  type="text" 
-                  placeholder="e.g., Aulas 4" 
-                  value={area}
-                  onChange={(e) => setArea(e.target.value)}
-                  required 
-                />
-              </div>
-              <div className="form-group">
-                <label>Coordinator <span className="required">*</span></label>
-                <input 
-                  type="text" 
-                  placeholder="e.g., Laura Martinez" 
-                  value={coordinador}
-                  onChange={(e) => setCoordinador(e.target.value)}
-                  required 
-                />
-              </div>
+            <div className="form-group full-width">
+              <label>Nombre <span className="required">*</span></label>
+              <input type="text" value={name} onChange={e => setName(e.target.value)} required />
             </div>
 
             <div className="form-group full-width">
-              <label>Description</label>
-              <textarea 
-                placeholder="Description or primary use of the lab..." 
-                rows={3}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              ></textarea>
+              <label>Departamento <span className="required">*</span></label>
+              <select value={deptId} onChange={e => setDeptId(e.target.value)} required>
+                <option value="" disabled>Seleccionar</option>
+                {depts.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
+              </select>
             </div>
 
-            <div className="form-actions" style={{marginTop: '1rem'}}>
+            <div className="form-actions">
               <button type="submit" className="btn-primary flex items-center justify-center gap-2">
-                <Save size={18} />
-                {editingId ? 'Update Lab' : 'Register Lab'}
-              </button>
-              <button type="button" className="btn-secondary" onClick={handleCancel}>
-                Cancel
+                <Save size={18} />Register Lab
               </button>
             </div>
           </form>
         </div>
 
-        {/* Lista de Laboratorios */}
         <div className="card users-list-card">
-          <h2 className="card-title" style={{marginBottom: '1rem'}}>Active Laboratories</h2>
+          <h2 className="card-title" style={{ marginBottom: '1rem' }}>Active Laboratories</h2>
           <div className="users-list">
-            {labsList.map((l) => (
-              <div key={l.lab_id} className="user-item">
+            {labsList.map(l => (
+              <div key={l.id} className="user-item">
                 <div className="user-info">
-                  <p className="user-name">{l.name} <span className="user-role">{l.lab_id}</span></p>
-                  <p className="user-email">{l.area} • Coord: {l.coordinador}</p>
-                  {l.description && <p style={{fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '4px'}}>{l.description}</p>}
+                  <p className="user-name">{l.name}</p>
+                  <p className="user-email">{l.department?.name}</p>
                 </div>
                 <div className="user-actions">
-                  <button className="btn-icon" onClick={() => handleEdit(l)} title="Editar">
-                    <Edit size={16} />
-                  </button>
-                  <button className="btn-icon danger" onClick={() => handleDelete(l.lab_id)} title="Eliminar">
-                    <Trash2 size={16} />
-                  </button>
+                  <button className="btn-icon danger" onClick={() => handleDelete(l.id)}><Trash2 size={16} /></button>
                 </div>
               </div>
             ))}
-            {labsList.length === 0 && (
-              <p style={{fontSize: '0.9rem', color: 'var(--text-muted)'}}>No labs created yet.</p>
-            )}
+            {labsList.length === 0 && <p style={{ color: 'var(--text-muted)' }}>No hay laboratorios.</p>}
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }

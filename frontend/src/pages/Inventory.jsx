@@ -1,151 +1,407 @@
-import { Search, Filter, Download, Edit, Trash2, Eye } from 'lucide-react';
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getInventory, deleteInventoryItem } from '../data/mockData';
-import './Inventory.css';
+import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
+import {
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+} from '@tanstack/react-table'
+import { Search, Edit, Trash2, Eye, Filter, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
+import { api } from '../api/client'
+import { useDebounce } from '../hooks/useDebounce'
+import AssetDetailModal from '../components/AssetDetailModal'
+import './Inventory.css'
 
+const LIMIT = 20
+
+const STATUS_OPTIONS  = ['activo', 'mantenimiento', 'baja', 'agotado']
+const STATUS_LABELS   = { activo: 'Activo', mantenimiento: 'Mantenimiento', baja: 'Baja', agotado: 'Agotado' }
+const TYPE_OPTIONS    = ['equipo', 'reactivo', 'consumible', 'material']
+const TYPE_LABELS     = { equipo: 'Equipo', reactivo: 'Reactivo', consumible: 'Consumible', material: 'Material' }
+
+// ─── Lab Selector ─────────────────────────────────────────────────────────────
+function LabSelector({ labs, selectedId, onChange }) {
+  if (!labs.length) return null
+  return (
+    <div className="lab-selector">
+      {labs.map(lab => (
+        <button
+          key={lab.id}
+          className={`lab-tab ${selectedId === lab.id ? 'active' : ''}`}
+          onClick={() => onChange(lab)}
+        >
+          {lab.name}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+// ─── Filter Panel ─────────────────────────────────────────────────────────────
+function FilterPanel({ filters, schema, onChange, onReset }) {
+  const hasActive = Object.values(filters).some(v => v !== '')
+
+  return (
+    <div className="filter-panel">
+      <div className="filter-panel-header">
+        <span>Filtros</span>
+        {hasActive && (
+          <button className="filter-reset" onClick={onReset}>
+            <X size={14} /> Limpiar
+          </button>
+        )}
+      </div>
+
+      <div className="filter-grid">
+        <div className="filter-item">
+          <label>Status</label>
+          <select value={filters.status} onChange={e => onChange('status', e.target.value)}>
+            <option value="">Todos</option>
+            {STATUS_OPTIONS.map(s => (
+              <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+            ))}
+          </select>
+        </div>
+
+        <div className="filter-item">
+          <label>Tipo</label>
+          <select value={filters.assetType} onChange={e => onChange('assetType', e.target.value)}>
+            <option value="">Todos</option>
+            {TYPE_OPTIONS.map(t => (
+              <option key={t} value={t}>{TYPE_LABELS[t]}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Filtros dinámicos del schema */}
+        {schema.filter(f => f.isFilterable).map(field => (
+          <div className="filter-item" key={field.fieldKey}>
+            <label>{field.fieldLabel}</label>
+            <input
+              type={field.fieldType === 'number' ? 'number' : 'text'}
+              placeholder={`Filtrar por ${field.fieldLabel.toLowerCase()}`}
+              value={filters[field.fieldKey] ?? ''}
+              onChange={e => onChange(field.fieldKey, e.target.value)}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 export default function Inventory() {
-  const [items, setItems] = useState([]);
-  const [selectedItem, setSelectedItem] = useState(null);
-  const navigate = useNavigate();
+  const { user }  = useAuth()
+  const navigate  = useNavigate()
 
+  const [labs,         setLabs]         = useState([])
+  const [activeLab,    setActiveLab]    = useState(null)
+  const [schema,       setSchema]       = useState([])
+  const [assets,       setAssets]       = useState([])
+  const [total,        setTotal]        = useState(0)
+  const [page,         setPage]         = useState(1)
+  const [searchInput,  setSearchInput]  = useState('')
+  const [filters,      setFilters]      = useState({ status: '', assetType: '' })
+  const [showFilters,  setShowFilters]  = useState(false)
+  const [loading,      setLoading]      = useState(false)
+  const [error,        setError]        = useState('')
+  const [detailAsset,  setDetailAsset]  = useState(null)
+
+  const search = useDebounce(searchInput, 300)
+
+  // Carga labs
   useEffect(() => {
-    // Cargar datos al iniciar el componente (esto luego será un fetch a Postgres)
-    setItems(getInventory());
-  }, []);
+    api.get('/labs').then(data => {
+      setLabs(data)
+      if (data.length >= 1) setActiveLab(data[0])
+    }).catch(err => setError(err.message))
+  }, [])
 
-  const handleDelete = (id) => {
-    if (window.confirm('¿Estás seguro de que deseas eliminar este activo? Esta acción no se puede deshacer.')) {
-      deleteInventoryItem(id); // Borrar en "DB"
-      setItems(getInventory()); // Refrescar estado local
+  // Carga schema cuando cambia lab
+  useEffect(() => {
+    if (!activeLab) return
+    setSchema([])
+    api.get(`/labs/${activeLab.id}/schema`).then(setSchema).catch(console.error)
+  }, [activeLab])
+
+  // Carga assets
+  useEffect(() => {
+    if (!activeLab) return
+    setLoading(true)
+
+    const params = new URLSearchParams({ page, limit: LIMIT })
+    if (search)             params.set('search',    search)
+    if (filters.status)     params.set('status',    filters.status)
+    if (filters.assetType)  params.set('assetType', filters.assetType)
+
+    // filtros dinámicos del schema
+    schema.filter(f => f.isFilterable).forEach(f => {
+      if (filters[f.fieldKey]) params.set(f.fieldKey, filters[f.fieldKey])
+    })
+
+    api.get(`/assets/lab/${activeLab.id}?${params}`)
+      .then(data => { setAssets(data.assets); setTotal(data.total) })
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [activeLab, page, search, filters])
+
+  function handleLabChange(lab) {
+    setActiveLab(lab)
+    setPage(1)
+    setSearchInput('')
+    setFilters({ status: '', assetType: '' })
+    setAssets([])
+  }
+
+  function handleFilterChange(key, val) {
+    setFilters(prev => ({ ...prev, [key]: val }))
+    setPage(1)
+  }
+
+  function handleFilterReset() {
+    setFilters({ status: '', assetType: '' })
+    setPage(1)
+  }
+
+  async function handleDelete(asset) {
+    const confirmed = window.confirm(
+      `¿Dar de baja "${asset.name}"?\n\nEsta acción marca el activo como BAJA. No se elimina físicamente pero no podrá reactivarse.`
+    )
+    if (!confirmed) return
+    try {
+      await api.delete(`/assets/${asset.id}`)
+      const params = new URLSearchParams({ page, limit: LIMIT })
+      if (search) params.set('search', search)
+      if (filters.status) params.set('status', filters.status)
+      const data = await api.get(`/assets/lab/${activeLab.id}?${params}`)
+      setAssets(data.assets)
+      setTotal(data.total)
+    } catch (err) {
+      setError(err.message)
     }
-  };
+  }
 
-  const handleEdit = (id) => {
-    navigate(`/edit/${id}`);
-  };
+  const activeFilterCount = Object.values(filters).filter(v => v !== '').length
+
+  // ─── Columnas dinámicas ───────────────────────────────────────────────────
+  const columns = useMemo(() => {
+    const base = [
+      {
+        id: 'name',
+        header: 'Nombre',
+        accessorKey: 'name',
+      },
+      {
+        id: 'assetType',
+        header: 'Tipo',
+        accessorKey: 'assetType',
+        cell: ({ getValue }) => TYPE_LABELS[getValue()] ?? getValue()
+      },
+      {
+        id: 'quantity',
+        header: 'Cantidad',
+        accessorKey: 'quantity',
+      },
+      {
+        id: 'status',
+        header: 'Status',
+        accessorKey: 'status',
+        cell: ({ getValue }) => {
+          const val = getValue()
+          return <span className={`status-badge ${val}`}>{STATUS_LABELS[val] ?? val}</span>
+        }
+      },
+    ]
+
+    const dynamic = schema
+      .filter(f => f.isVisibleInTable)
+      .map(f => ({
+        id:       f.fieldKey,
+        header:   f.fieldLabel,
+        accessorFn: row => row.extraFields?.[f.fieldKey],
+        cell: ({ getValue }) => {
+          const val = getValue()
+          if (val === undefined || val === null) return <span style={{ color: 'var(--text-muted)' }}>—</span>
+          if (f.fieldType === 'url')  return <a href={val} target="_blank" rel="noreferrer" style={{ color: 'var(--primary)' }}>Ver</a>
+          if (f.fieldType === 'date') return new Date(val).toLocaleDateString('es-MX')
+          return String(val)
+        }
+      }))
+
+    const actions = [{
+      id: 'actions',
+      header: '',
+      cell: ({ row }) => (
+        <div style={{ display: 'flex', gap: '0.4rem' }}>
+          <button
+            className="btn-icon"
+            title="Ver detalle"
+            onClick={() => setDetailAsset(row.original)}
+          >
+            <Eye size={15} />
+          </button>
+          <button
+            className="btn-icon"
+            title="Editar"
+            onClick={() => navigate(`/edit/${row.original.id}`)}
+          >
+            <Edit size={15} />
+          </button>
+          <button
+            className="btn-icon danger"
+            title="Dar de baja"
+            style={{ color: 'var(--danger)', borderColor: 'var(--danger-bg)' }}
+            onClick={() => handleDelete(row.original)}
+          >
+            <Trash2 size={15} />
+          </button>
+        </div>
+      )
+    }]
+
+    return [...base, ...dynamic, ...actions]
+  }, [schema])
+
+  const table = useReactTable({
+    data:            assets,
+    columns,
+    manualPagination: true,
+    manualFiltering:  true,
+    pageCount:        Math.ceil(total / LIMIT),
+    getCoreRowModel:  getCoreRowModel(),
+  })
+
+  const totalPages = Math.ceil(total / LIMIT)
 
   return (
     <div className="inventory">
       <div className="page-header">
-        <h1>Current Inventory</h1>
-        <p>Manage and track all laboratory items</p>
+        <h1>Inventario</h1>
+        <p>
+          {activeLab
+            ? `${activeLab.name} — ${total} activo${total !== 1 ? 's' : ''}`
+            : 'Selecciona un laboratorio'}
+        </p>
       </div>
+
+      <LabSelector labs={labs} selectedId={activeLab?.id} onChange={handleLabChange} />
 
       <div className="card inventory-container">
         <div className="inventory-actions">
           <div className="search-wrapper">
             <Search className="search-icon" size={18} />
-            <input type="text" placeholder="Search by item name or ID..." />
+            <input
+              type="text"
+              placeholder="Buscar por nombre..."
+              value={searchInput}
+              onChange={e => { setSearchInput(e.target.value); setPage(1) }}
+            />
+            {searchInput && (
+              <button
+                className="search-clear"
+                onClick={() => { setSearchInput(''); setPage(1) }}
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
 
           <div className="filters">
-            <div className="filter-select">
+            <button
+              className={`btn-filter ${showFilters ? 'active' : ''}`}
+              onClick={() => setShowFilters(p => !p)}
+            >
               <Filter size={16} />
-              <select>
-                <option>All Categories</option>
-              </select>
-            </div>
-            <div className="filter-select">
-              <select>
-                <option>All Status</option>
-              </select>
-            </div>
-            <button className="btn-primary">
-              <Download size={16} />
-              Export
+              Filtros
+              {activeFilterCount > 0 && (
+                <span className="filter-badge">{activeFilterCount}</span>
+              )}
             </button>
           </div>
         </div>
 
+        {showFilters && (
+          <FilterPanel
+            filters={filters}
+            schema={schema}
+            onChange={handleFilterChange}
+            onReset={handleFilterReset}
+          />
+        )}
+
+        {error && <p style={{ color: 'var(--danger)', padding: '1rem' }}>{error}</p>}
+
         <div className="table-wrapper">
           <table className="inventory-table">
             <thead>
-              <tr>
-                <th>Item ID</th>
-                <th>Name</th>
-                <th>Category</th>
-                <th>Lab ID</th>
-                <th>Quantity</th>
-                <th>Location</th>
-                <th>Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item) => (
-                <tr key={item.id}>
-                  <td className="item-id">{item.id}</td>
-                  <td className="item-name">{item.name}</td>
-                  <td>{item.category}</td>
-                  <td style={{ fontWeight: 500 }}>{item.lab_id}</td>
-                  <td>{item.quantity}</td>
-                  <td>{item.storage}</td>
-                  <td>
-                    <span className={`status-badge ${item.status?.toLowerCase().replace(' ', '-') || 'normal'}`}>
-                      {item.status || 'Normal'}
-                    </span>
-                  </td>
-                  <td>
-                    <div style={{ display: 'flex', gap: '0.5rem' }}>
-                      <button className="btn-icon" onClick={() => setSelectedItem(item)} title="Ver Descripción">
-                        <Eye size={16} />
-                      </button>
-                      <button className="btn-icon" onClick={() => handleEdit(item.id)} title="Editar">
-                        <Edit size={16} />
-                      </button>
-                      <button className="btn-icon danger" onClick={() => handleDelete(item.id)} title="Eliminar" style={{ color: 'var(--danger)', borderColor: 'var(--danger-bg)' }}>
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
+              {table.getHeaderGroups().map(hg => (
+                <tr key={hg.id}>
+                  {hg.headers.map(header => (
+                    <th key={header.id}>
+                      {flexRender(header.column.columnDef.header, header.getContext())}
+                    </th>
+                  ))}
                 </tr>
               ))}
-              {items.length === 0 && (
+            </thead>
+            <tbody>
+              {loading && (
                 <tr>
-                  <td colSpan="8" style={{ textAlign: 'center', padding: '2rem' }}>No items found.</td>
+                  <td colSpan={columns.length} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                    Cargando...
+                  </td>
+                </tr>
+              )}
+              {!loading && table.getRowModel().rows.map(row => (
+                <tr key={row.id}>
+                  {row.getVisibleCells().map(cell => (
+                    <td key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+              {!loading && assets.length === 0 && (
+                <tr>
+                  <td colSpan={columns.length} style={{ textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+                    {activeLab ? 'No hay activos en este laboratorio.' : 'Selecciona un laboratorio.'}
+                  </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
+
         <div className="table-footer">
-          <p>Showing {items.length} of {items.length} items</p>
+          <p>Mostrando {assets.length} de {total} activos</p>
+          {totalPages > 1 && (
+            <div className="pagination">
+              <button
+                className="btn-icon"
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+                disabled={page === 1}
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <span className="page-info">{page} / {totalPages}</span>
+              <button
+                className="btn-icon"
+                onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Ventana Modal para agregar items */}
-      {selectedItem && (
-        <div className="modal-overlay" onClick={() => setSelectedItem(null)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
-              <h2 style={{ margin: 0, color: 'var(--text-main)', fontSize: '1.4rem' }}>{selectedItem.name}</h2>
-            </div>
-
-            <div className="modal-body">
-              <img
-                src={selectedItem.image || 'https://via.placeholder.com/500x300?text=Placeholder+Image'}
-                alt={selectedItem.name}
-                className="modal-image"
-              />
-              <div className="modal-details">
-                <p><strong>Descripción:</strong> {selectedItem.description || 'Sin descripción detallada para este activo. Este valor será traído de PostgreSQL en el futuro.'}</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginTop: '1.5rem', padding: '1rem', backgroundColor: 'var(--secondary)', borderRadius: '8px' }}>
-                  <p><strong>ID:</strong> {selectedItem.id}</p>
-                  <p><strong>Categoría:</strong> {selectedItem.category}</p>
-                  <p><strong>Laboratorio:</strong> {selectedItem.lab_id}</p>
-                  <p><strong>Ubicación:</strong> {selectedItem.storage}</p>
-                  <p><strong>Cantidad:</strong> {selectedItem.quantity}</p>
-                  <p><strong>Status:</strong> {selectedItem.status}</p>
-                </div>
-              </div>
-            </div>
-            <div className="modal-actions" style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
-              <button className="btn-primary" onClick={() => setSelectedItem(null)}>Cerrar Ventana</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AssetDetailModal
+        asset={detailAsset}
+        schema={schema}
+        onClose={() => setDetailAsset(null)}
+      />
     </div>
-  );
+  )
 }

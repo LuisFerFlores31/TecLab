@@ -138,3 +138,35 @@
 .btn-secondary:hover {
   background-color: var(--secondary);
 }
+
+/**/
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.btn-back:hover { color: var(--primary); }
+
+.asset-form-grid {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.dynamic-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .dynamic-fields { grid-template-columns: 1fr; }
+}
