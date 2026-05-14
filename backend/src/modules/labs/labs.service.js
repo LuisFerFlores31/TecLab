@@ -1,4 +1,3 @@
-
 const prisma = require('../../lib/prisma')
 
 async function getAllLabs() {
