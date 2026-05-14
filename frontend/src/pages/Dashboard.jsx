@@ -1,8 +1,21 @@
-import { Package, AlertCircle, Clock } from 'lucide-react';
-import { recentActivity } from '../data/mockData';
-import './Dashboard.css';
+import { useState, useEffect } from 'react'
+import { Package, Clock } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
+import { api } from '../api/client'
+import './Dashboard.css'
 
 export default function Dashboard() {
+  const { user } = useAuth()
+  const [labs,    setLabs]    = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    api.get('/labs')
+      .then(setLabs)
+      .catch(console.error)
+      .finally(() => setLoading(false))
+  }, [])
+
   return (
     <div className="dashboard">
       <div className="search-bar">
@@ -12,9 +25,11 @@ export default function Dashboard() {
       <div className="kpi-grid">
         <div className="card kpi-card primary-kpi">
           <div className="kpi-content">
-            <p className="kpi-label">Total Items</p>
-            <h3>1,247</h3>
-            <p className="kpi-subtext success-text">↑ 12% from last month</p>
+            <p className="kpi-label">Laboratorios</p>
+            <h3>{loading ? '...' : labs.length}</h3>
+            <p className="kpi-subtext">
+              {user?.role === 'coordinador' ? 'Vista global' : 'Tus laboratorios'}
+            </p>
           </div>
           <div className="kpi-icon primary-icon-bg">
             <Package size={24} className="primary-icon" />
@@ -23,9 +38,9 @@ export default function Dashboard() {
 
         <div className="card kpi-card danger-kpi">
           <div className="kpi-content">
-            <p className="kpi-label">Expired Items</p>
-            <h3 className="danger-text">7</h3>
-            <p className="kpi-subtext">Requires immediate attention</p>
+            <p className="kpi-label">Alertas activas</p>
+            <h3 className="danger-text">—</h3>
+            <p className="kpi-subtext">Próximamente</p>
           </div>
           <div className="kpi-icon danger-icon-bg">
             <Clock size={24} className="danger-icon" />
@@ -34,22 +49,22 @@ export default function Dashboard() {
       </div>
 
       <div className="card recent-activity">
-        <h3>Recent Activity</h3>
+        <h3>Laboratorios del sistema</h3>
         <div className="activity-list">
-          {recentActivity.map((activity) => (
-            <div key={activity.id} className="activity-item">
-              <div className={`activity-icon-container ${activity.type}`}>
-                <Package size={16} />
-              </div>
+          {loading && <p style={{ padding: '1rem', color: 'var(--text-muted)' }}>Cargando...</p>}
+          {!loading && labs.map(lab => (
+            <div key={lab.id} className="activity-item">
               <div className="activity-details">
-                <p className="activity-user">{activity.user}</p>
-                <p className="activity-action">{activity.action}</p>
+                <p className="activity-user">{lab.name}</p>
+                <p className="activity-action">{lab.department?.name}</p>
               </div>
-              <div className="activity-time">{activity.time}</div>
             </div>
           ))}
+          {!loading && labs.length === 0 && (
+            <p style={{ padding: '1rem', color: 'var(--text-muted)' }}>No hay laboratorios registrados.</p>
+          )}
         </div>
       </div>
     </div>
-  );
+  )
 }

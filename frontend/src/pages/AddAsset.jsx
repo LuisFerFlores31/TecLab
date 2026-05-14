@@ -1,206 +1,262 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Upload, Save } from 'lucide-react';
-import { getInventoryById, addInventoryItem, updateInventoryItem } from '../data/mockData';
-import './AddAsset.css';
+import { useState, useEffect } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { Save, Upload, ArrowLeft } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
+import { api } from '../api/client'
+import './AddAsset.css'
+
+const ASSET_TYPES = [
+  { value: 'equipo',     label: 'Equipo'     },
+  { value: 'reactivo',   label: 'Reactivo'   },
+  { value: 'consumible', label: 'Consumible' },
+  { value: 'material',   label: 'Material'   },
+]
+
+const STATUS_OPTIONS = [
+  { value: 'activo',        label: 'Activo'        },
+  { value: 'mantenimiento', label: 'Mantenimiento' },
+  { value: 'agotado',       label: 'Agotado'       },
+]
 
 export default function AddAsset() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const isEditing = Boolean(id);
+  const { id }    = useParams()
+  const navigate  = useNavigate()
+  const { user }  = useAuth()
+  const isEditing = Boolean(id)
 
-  // State del formulario (Temporal para futuro PostgreSQL)
-  const [name, setName] = useState('');
-  const [category, setCategory] = useState('');
-  const [quantity, setQuantity] = useState('');
-  const [labId, setLabId] = useState('');
-  const [serialNumber, setSerialNumber] = useState('');
-  const [storage, setStorage] = useState('');
-  const [expiryDate, setExpiryDate] = useState('');
-  const [description, setDescription] = useState('');
-  const [status, setStatus] = useState('Normal');
+  // Labs disponibles para el usuario
+  const [labs,        setLabs]        = useState([])
+  const [selectedLab, setSelectedLab] = useState(null)
+  const [schema,      setSchema]      = useState([])
 
-  // Carga los datos del item solo si se está editando
+  // Campos base
+  const [name,       setName]       = useState('')
+  const [assetType,  setAssetType]  = useState('equipo')
+  const [quantity,   setQuantity]   = useState(0)
+  const [status,     setStatus]     = useState('activo')
+
+  // Campos dinámicos — un objeto plano { fieldKey: value }
+  const [extraFields, setExtraFields] = useState({})
+
+  const [loading,  setLoading]  = useState(false)
+  const [error,    setError]    = useState('')
+  const [success,  setSuccess]  = useState('')
+
+  // Carga labs del usuario
   useEffect(() => {
-    if (isEditing) {
-      const itemToEdit = getInventoryById(id);
-      if (itemToEdit) {
-        setName(itemToEdit.name || '');
-        setCategory(itemToEdit.category || '');
-        setQuantity(itemToEdit.quantity || '');
-        setLabId(itemToEdit.lab_id || '');
-        setSerialNumber(itemToEdit.serialNumber || '');
-        setStorage(itemToEdit.storage || '');
-        setExpiryDate(itemToEdit.expiryDate || '');
-        setDescription(itemToEdit.description || '');
-        setStatus(itemToEdit.status || 'Normal');
+    api.get('/labs').then(data => {
+      setLabs(data)
+      if (!isEditing && data.length > 0) setSelectedLab(data[0])
+    }).catch(err => setError(err.message))
+  }, [])
+
+  // Si editando, carga el asset y setea el lab
+  useEffect(() => {
+    if (!isEditing) return
+    api.get(`/assets/${id}`).then(asset => {
+      setName(asset.name)
+      setAssetType(asset.assetType)
+      setQuantity(asset.quantity)
+      setStatus(asset.status)
+      setExtraFields(asset.extraFields ?? {})
+      // busca el lab en la lista
+      setSelectedLab(prev => prev ?? { id: asset.labId })
+    }).catch(() => navigate('/inventory'))
+  }, [id])
+
+  // Carga schema cuando cambia el lab
+  useEffect(() => {
+    if (!selectedLab) return
+    api.get(`/labs/${selectedLab.id}/schema`).then(setSchema).catch(console.error)
+  }, [selectedLab])
+
+  function handleExtraChange(key, value) {
+    setExtraFields(prev => ({ ...prev, [key]: value }))
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    setError(''); setSuccess(''); setLoading(true)
+
+    const body = { name, assetType, quantity: Number(quantity), status, extraFields }
+
+    try {
+      if (isEditing) {
+        await api.patch(`/assets/${id}`, body)
+        setSuccess('Activo actualizado.')
+        setTimeout(() => navigate('/inventory'), 800)
       } else {
-        alert("El activo no fue encontrado");
-        navigate('/inventory');
+        await api.post(`/assets/lab/${selectedLab.id}`, body)
+        setSuccess('Activo creado.')
+        setTimeout(() => navigate('/inventory'), 800)
       }
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
     }
-  }, [id, isEditing, navigate]);
+  }
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  // ─── Render de campo dinámico según su tipo ────────────────────────────────
+  function renderField(field) {
+    const val = extraFields[field.fieldKey] ?? ''
 
-    const assetData = {
-      id: isEditing ? id : `ITM-${Math.floor(Math.random() * 1000).toString().padStart(3, '0')}`,
-      name,
-      category,
-      quantity: Number(quantity),
-      lab_id: labId,
-      serialNumber,
-      storage,
-      expiryDate,
-      description,
-      status
-    };
-
-    if (isEditing) {
-      updateInventoryItem(id, assetData);
-    } else {
-      addInventoryItem(assetData);
+    const commonProps = {
+      id:       field.fieldKey,
+      value:    val,
+      required: field.isRequired,
+      onChange: e => handleExtraChange(field.fieldKey, e.target.value),
     }
 
-    navigate('/inventory');
-  };
+    switch (field.fieldType) {
+      case 'number':
+        return (
+          <input
+            {...commonProps}
+            type="number"
+            onChange={e => handleExtraChange(field.fieldKey, Number(e.target.value))}
+          />
+        )
+      case 'date':
+        return <input {...commonProps} type="date" />
+      case 'url':
+        return <input {...commonProps} type="url" placeholder="https://..." />
+      case 'select':
+        return (
+          <select {...commonProps}>
+            <option value="">Seleccionar</option>
+            {(field.selectOptions ?? []).map(opt => (
+              <option key={opt} value={opt}>{opt}</option>
+            ))}
+          </select>
+        )
+      case 'text':
+      default:
+        return <input {...commonProps} type="text" />
+    }
+  }
 
   return (
     <div className="add-asset">
       <div className="page-header">
-        <h1>{isEditing ? 'Edit Item' : 'Add New Item'}</h1>
-        <p>{isEditing ? 'Update the details of the selected item' : 'Enter details to add a new item to the inventory'}</p>
+        <button className="btn-back" onClick={() => navigate('/inventory')}>
+          <ArrowLeft size={18} /> Volver
+        </button>
+        <h1>{isEditing ? 'Editar Activo' : 'Nuevo Activo'}</h1>
+        <p>{isEditing ? 'Modifica los datos del activo' : 'Registra un nuevo activo en el inventario'}</p>
       </div>
 
       <div className="add-asset-content">
-        <div className="card image-upload-card">
-          <p className="card-title">Product Image</p>
-          <div className="upload-dropzone">
-            <Upload size={32} className="upload-icon" />
-            <p>Upload product image</p>
-            <button className="upload-btn">Choose File</button>
+
+        {/* ── Selector de lab (solo al crear) ── */}
+        {!isEditing && labs.length > 1 && (
+          <div className="card" style={{ marginBottom: '1.25rem', padding: '1.25rem' }}>
+            <p className="card-title" style={{ marginBottom: '0.75rem' }}>Laboratorio</p>
+            <div className="lab-selector">
+              {labs.map(lab => (
+                <button
+                  key={lab.id}
+                  type="button"
+                  className={`lab-tab ${selectedLab?.id === lab.id ? 'active' : ''}`}
+                  onClick={() => { setSelectedLab(lab); setExtraFields({}) }}
+                >
+                  {lab.name}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
-        <div className="card details-card">
-          <p className="card-title">Item Details</p>
+        <form className="asset-form-grid" onSubmit={handleSubmit}>
 
-          <form className="asset-form" onSubmit={handleSubmit}>
+          {/* ── Campos base ── */}
+          <div className="card details-card">
+            <p className="card-title">Datos generales</p>
+
+            {error   && <div className="login-error" style={{ marginBottom: '1rem' }}>{error}</div>}
+            {success && <div className="success-msg" style={{ marginBottom: '1rem' }}>{success}</div>}
+
             <div className="form-group full-width">
-              <label>Item Name <span className="required">*</span></label>
+              <label>Nombre <span className="required">*</span></label>
               <input
                 type="text"
-                placeholder="e.g., Pipetas de 10ml"
+                placeholder="Nombre del activo"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={e => setName(e.target.value)}
                 required
               />
             </div>
 
             <div className="form-split">
               <div className="form-group">
-                <label>Category <span className="required">*</span></label>
-                <select value={category} onChange={(e) => setCategory(e.target.value)} required>
-                  <option value="" disabled>Select category</option>
-                  <option value="Vidriería">Vidriería</option>
-                  <option value="Reactivos">Reactivos</option>
-                  <option value="Equipos">Equipos</option>
-                  <option value="Equipo de Protección">Equipo de Protección</option>
-                  <option value="Consumibles">Consumibles</option>
+                <label>Tipo <span className="required">*</span></label>
+                <select value={assetType} onChange={e => setAssetType(e.target.value)} required>
+                  {ASSET_TYPES.map(t => (
+                    <option key={t.value} value={t.value}>{t.label}</option>
+                  ))}
                 </select>
               </div>
               <div className="form-group">
-                <label>Quantity <span className="required">*</span></label>
+                <label>Cantidad <span className="required">*</span></label>
                 <input
                   type="number"
-                  placeholder="0"
+                  min="0"
                   value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
+                  onChange={e => setQuantity(e.target.value)}
                   required
                 />
               </div>
             </div>
 
-            <div className="form-split">
-              <div className="form-group">
-                <label>Lab ID <span className="required">*</span></label>
-                <input
-                  type="text"
-                  placeholder="e.g., LAB-01"
-                  value={labId}
-                  onChange={(e) => setLabId(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="form-group">
-                <label>Serial Number</label>
-                <input
-                  type="text"
-                  placeholder="e.g., SN-12345"
-                  value={serialNumber}
-                  onChange={(e) => setSerialNumber(e.target.value)}
-                />
-              </div>
-            </div>
-
-            <div className="form-split">
-              <div className="form-group">
-                <label>Storage Location <span className="required">*</span></label>
-                <input
-                  type="text"
-                  placeholder="e.g., Estante A-3"
-                  value={storage}
-                  onChange={(e) => setStorage(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-
-            <div className="form-split">
+            {isEditing && (
               <div className="form-group">
                 <label>Status</label>
-                <select value={status} onChange={(e) => setStatus(e.target.value)}>
-                  <option value="Normal">Normal</option>
-                  <option value="Review">Review / Mantenimiento</option>
+                <select value={status} onChange={e => setStatus(e.target.value)}>
+                  {STATUS_OPTIONS.map(s => (
+                    <option key={s.value} value={s.value}>{s.label}</option>
+                  ))}
                 </select>
               </div>
-              <div className="form-group">
-                <label>Expiry Date</label>
-                <input
-                  type="date"
-                  value={expiryDate}
-                  onChange={(e) => setExpiryDate(e.target.value)}
-                />
+            )}
+          </div>
+
+          {/* ── Campos dinámicos del lab ── */}
+          {schema.length > 0 && (
+            <div className="card details-card">
+              <p className="card-title">
+                Detalles — {selectedLab?.name ?? 'Laboratorio'}
+              </p>
+              <div className="dynamic-fields">
+                {schema.map(field => (
+                  <div
+                    className="form-group"
+                    key={field.fieldKey}
+                    style={{ gridColumn: field.fieldType === 'text' && field.fieldKey.includes('observ') ? '1 / -1' : undefined }}
+                  >
+                    <label>
+                      {field.fieldLabel}
+                      {field.isRequired && <span className="required"> *</span>}
+                    </label>
+                    {renderField(field)}
+                  </div>
+                ))}
               </div>
             </div>
+          )}
 
-            <div className="form-group full-width">
-              <label>Description</label>
-              <textarea
-                placeholder="Additional notes or description..."
-                rows={3}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              ></textarea>
-            </div>
+          {/* ── Acciones ── */}
+          <div className="form-actions" style={{ gridColumn: '1 / -1' }}>
+            <button type="submit" className="btn-primary flex items-center justify-center gap-2" disabled={loading}>
+              <Save size={18} />
+              {loading ? 'Guardando...' : isEditing ? 'Guardar cambios' : 'Registrar activo'}
+            </button>
+            <button type="button" className="btn-secondary" onClick={() => navigate('/inventory')}>
+              Cancelar
+            </button>
+          </div>
 
-            <div className="form-actions">
-              <button type="submit" className="btn-primary flex items-center justify-center gap-2">
-                <Save size={18} />
-                {isEditing ? 'Save Changes' : 'Save Item'}
-              </button>
-              <button
-                type="button"
-                className="btn-secondary"
-                onClick={() => navigate('/inventory')}
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
+        </form>
       </div>
     </div>
-  );
+  )
 }
