@@ -20,3 +20,52 @@ Este sistema fue diseñado para optimizar y digitalizar el control de inventario
 ## 👥 El Equipo: "Los Makuins"
 Este proyecto fue desarrollado como parte de una colaboración académica por:
 
+## Requisitos
+- Docker Desktop
+- Git
+
+### Primera vez
+```bash
+docker-compose up --build
+```
+
+### Correr seed (primera vez o al resetear BD)
+```bash
+docker-compose exec backend node src/lib/seed.js
+```
+
+### Levantar
+```bash
+docker-compose up
+```
+
+### Apagar
+```bash
+docker-compose down
+```
+
+### Apagar y borrar datos (reset completo)
+```bash
+docker-compose down -v
+```
+
+## URLs
+| Servicio  | URL                    |
+|-----------|------------------------|
+| Frontend  | http://localhost:5173  |
+| Backend   | http://localhost:3001  |
+| API Health| http://localhost:3001/api/health |
+
+## Credenciales desarrollo
+| Usuario         | Email                      | Password        |
+|-----------------|----------------------------|-----------------|
+| Coordinador     | coordinador@teclab.mx      | Admin1234!      |
+| Encargado Bio   | bio@teclab.mx              | Encargado1234!  |
+
+## Commits
+- `feat:` nueva funcionalidad
+- `fix:` corrección de bug
+- `refactor:` reestructuración
+- `chore:` configuración/dependencias
+- `db:` cambios de schema/migraciones
+- `docs:` documentación
