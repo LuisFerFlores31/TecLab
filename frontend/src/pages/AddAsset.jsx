@@ -143,7 +143,7 @@ export default function AddAsset() {
       if (imageFile && asset?.id) {
         const formData = new FormData()
         formData.append('image', imageFile)
-        await fetch(`http://localhost:3001/api/assets/${asset.id}/image`, {
+        await fetch(`${import.meta.env.VITE_API_URL}/api/assets/${asset.id}/image`, {
           method:  'POST',
           headers: { Authorization: `Bearer ${localStorage.getItem('teclab_token')}` },
           body:    formData

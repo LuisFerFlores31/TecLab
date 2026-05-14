@@ -9,8 +9,8 @@ const authRoutes      = require('./modules/auth/auth.routes')
 const labRoutes       = require('./modules/labs/labs.routes')
 const assetRoutes     = require('./modules/assets/assets.routes')
 const userRoutes      = require('./modules/users/users.routes')
-//const alertRoutes     = require('./modules/alerts/alerts.routes')
-//const analyticsRoutes = require('./modules/analytics/analytics.routes')
+const alertRoutes     = require('./modules/alerts/alerts.routes')
+const analyticsRoutes = require('./modules/analytics/analytics.routes')
 
 const app  = express()
 const PORT = process.env.PORT || 3001
@@ -23,8 +23,8 @@ app.use('/api/auth',      authRoutes)
 app.use('/api/labs',      labRoutes)
 app.use('/api/assets',    assetRoutes)
 app.use('/api/users',     userRoutes)
-//app.use('/api/alerts',    alertRoutes)
-//app.use('/api/analytics', analyticsRoutes)
+app.use('/api/alerts',    alertRoutes)
+app.use('/api/analytics', analyticsRoutes)
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }))
 

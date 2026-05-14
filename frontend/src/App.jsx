@@ -8,6 +8,8 @@ import AddAsset   from './pages/AddAsset'
 import AddUser    from './pages/AddUser'
 import Alerts     from './pages/Alerts'
 import ManageLabs from './pages/ManageLabs'
+import Analytics from './pages/Analytics'
+
 
 function PrivateRoute({ children }) {
   const { user } = useAuth()
@@ -31,11 +33,13 @@ export default function App() {
         <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
           <Route index                element={<Dashboard />} />
           <Route path="inventory"     element={<Inventory />} />
+          <Route path="analytics"     element={<Analytics />} />
           <Route path="alerts"        element={<Alerts />} />
           <Route path="add"           element={<AddAsset />} />
           <Route path="edit/:id"      element={<AddAsset />} />
           <Route path="users"         element={<CoordinatorRoute><AddUser /></CoordinatorRoute>} />
           <Route path="labs"          element={<CoordinatorRoute><ManageLabs /></CoordinatorRoute>} />
+          
         </Route>
       </Routes>
     </Router>

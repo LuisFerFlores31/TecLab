@@ -37,9 +37,9 @@ export default function Sidebar() {
           </>
         )}
 
-        <div className="nav-item disabled">
+        <NavLink to="/analytics" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
           <BarChart2 size={20} /><span>Analytics</span>
-        </div>
+        </NavLink>
         <NavLink to="/alerts" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
           <AlertTriangle size={20} /><span>Alerts</span>
         </NavLink>
