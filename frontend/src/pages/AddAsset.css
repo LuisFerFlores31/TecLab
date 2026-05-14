@@ -170,3 +170,40 @@
 @media (max-width: 640px) {
   .dynamic-fields { grid-template-columns: 1fr; }
 }
+
+/**/
+
+.image-preview-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.image-preview {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+}
+
+.image-clear {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.upload-hint {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
