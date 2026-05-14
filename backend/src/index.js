@@ -29,4 +29,4 @@ app.use('/api/users',     userRoutes)
 app.get('/api/health', (_req, res) => res.json({ ok: true }))
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
-//require('./lib/cron')
+require('./lib/cron')
