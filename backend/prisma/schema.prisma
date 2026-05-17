@@ -1,0 +1,163 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  
+}
+
+// ─── ENUMS ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  coordinador
+  encargado
+}
+
+enum AssetType {
+  equipo
+  reactivo
+  consumible
+  material
+}
+
+enum Status {
+  activo
+  mantenimiento
+  baja
+  agotado
+}
+
+enum FieldType {
+  text
+  number
+  date
+  select
+  url
+}
+
+// ─── MODELOS ──────────────────────────────────────────────────────────────────
+
+model Department {
+  id           Int          @id @default(autoincrement())
+  name         String       @unique
+  createdAt    DateTime     @default(now())
+  laboratories Laboratory[]
+}
+
+model User {
+  id            Int             @id @default(autoincrement())
+  name          String
+  email         String          @unique
+  passwordHash  String
+  role          Role            @default(encargado)
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  labMembers    LabMember[]
+  statusChanges StatusHistory[]
+  assetsCreated Asset[]  @relation("AssetCreator")
+  auditLogs     AssetAuditLog[]
+}
+
+model Laboratory {
+  id           Int              @id @default(autoincrement())
+  name         String           @unique
+  departmentId Int
+  createdAt    DateTime         @default(now())
+  department   Department       @relation(fields: [departmentId], references: [id])
+  members      LabMember[]
+  assets       Asset[]
+  fieldSchema  LabFieldSchema[]
+}
+
+model LabMember {
+  userId Int
+  labId  Int
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lab    Laboratory @relation(fields: [labId], references: [id], onDelete: Cascade)
+
+  @@id([userId, labId])
+}
+
+model Asset {
+  id            Int             @id @default(autoincrement())
+  labId         Int
+  assetType     AssetType
+  name          String
+  quantity      Int             @default(0)
+  status        Status          @default(activo)
+  imageUrl      String?
+  extraFields   Json            @default("{}")
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  lab           Laboratory      @relation(fields: [labId], references: [id], onDelete: Restrict)
+  statusHistory StatusHistory[]
+  periodLogs    AssetLog[]
+  unit          String?   // unidad de medida: gramos, litros, piezas, etc.
+  createdById   Int?
+  createdBy     User?     @relation("AssetCreator", fields: [createdById], references: [id])
+  auditLogs     AssetAuditLog[]
+}
+
+model StatusHistory {
+  id          Int      @id @default(autoincrement())
+  assetId     Int
+  oldStatus   Status
+  newStatus   Status
+  reason      String?
+  changedById Int
+  changedAt   DateTime @default(now())
+  asset       Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  changedBy   User     @relation(fields: [changedById], references: [id])
+}
+
+// Para labs con datos por periodo: Metrología, consumibles, etc.
+model AssetLog {
+  id        Int      @id @default(autoincrement())
+  assetId   Int
+  periodo   DateTime   // ej: "2024-1", "2024-2"
+  data      Json     // entradas, salidas, motivo, existencias
+  createdAt DateTime @default(now())
+  asset     Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+}
+
+model LabFieldSchema {
+  id               Int        @id @default(autoincrement())
+  labId            Int
+  fieldKey         String
+  fieldLabel       String
+  fieldType        FieldType  @default(text)
+  isRequired       Boolean    @default(false)
+  isVisibleInTable Boolean    @default(true)
+  isFilterable     Boolean    @default(false)
+  sortOrder        Int        @default(0)
+  selectOptions    Json?      // solo si fieldType = select → ["opción1","opción2"]
+  lab              Laboratory @relation(fields: [labId], references: [id], onDelete: Cascade)
+
+  @@unique([labId, fieldKey])
+}
+
+model AssetAuditLog {
+  id          Int      @id @default(autoincrement())
+  assetId     Int
+  userId      Int
+  action      AuditAction
+  fieldName   String?
+  oldValue    String?
+  newValue    String?
+  note        String?
+  createdAt   DateTime @default(now())
+  asset       Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id])
+}
+
+enum AuditAction {
+  creado
+  editado
+  status_cambiado
+  dado_de_baja
+  imagen_actualizada
+}
