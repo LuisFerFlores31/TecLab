@@ -17,34 +17,34 @@ export default function Sidebar() {
 
       <nav className="sidebar-nav">
         <NavLink to="/" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'} end>
-          <Home size={20} /><span>Home</span>
+          <Home size={20} /><span>Dashboard</span>
         </NavLink>
         <NavLink to="/inventory" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-          <Package size={20} /><span>Inventory</span>
+          <Package size={20} /><span>Inventario</span>
         </NavLink>
         <NavLink to="/add" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-          <PlusCircle size={20} /><span>Add New</span>
+          <PlusCircle size={20} /><span>Agregar Nuevo</span>
         </NavLink>
 
         {user?.role === 'coordinador' && (
           <>
             <NavLink to="/users" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-              <Users size={20} /><span>Manage Users</span>
+              <Users size={20} /><span>Usuarios</span>
             </NavLink>
             <NavLink to="/labs" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-              <Beaker size={20} /><span>Manage Labs</span>
+              <Beaker size={20} /><span>Laboratorios</span>
             </NavLink>
           </>
         )}
 
         <NavLink to="/analytics" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-          <BarChart2 size={20} /><span>Analytics</span>
+          <BarChart2 size={20} /><span>Historial</span>
         </NavLink>
         <NavLink to="/alerts" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
-          <AlertTriangle size={20} /><span>Alerts</span>
+          <AlertTriangle size={20} /><span>Alertas</span>
         </NavLink>
         <div className="nav-item disabled">
-          <Settings size={20} /><span>Settings</span>
+          <Settings size={20} /><span>Configuración</span>
         </div>
       </nav>
 

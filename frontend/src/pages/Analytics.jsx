@@ -140,7 +140,7 @@ export default function Analytics() {
     <div className="analytics">
       <div className="analytics-loading">
         <Activity size={32} className="spin" />
-        <p>Cargando analytics...</p>
+        <p>Cargando Historial...</p>
       </div>
     </div>
   )
@@ -171,7 +171,7 @@ export default function Analytics() {
   return (
     <div className="analytics">
       <div className="page-header">
-        <h1>Analytics</h1>
+        <h1>Historial</h1>
         <p>
           {user?.role === 'coordinador'
             ? 'Vista global del sistema'

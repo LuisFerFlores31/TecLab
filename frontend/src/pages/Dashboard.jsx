@@ -19,7 +19,7 @@ export default function Dashboard() {
   return (
     <div className="dashboard">
       <div className="search-bar">
-        <input type="text" placeholder="Search inventory items..." />
+        <input type="text" placeholder="Buscar Laboratorios..." />
       </div>
 
       <div className="kpi-grid">

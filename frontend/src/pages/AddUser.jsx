@@ -69,15 +69,15 @@ export default function AddUser() {
   return (
     <div className="add-user">
       <div className="page-header">
-        <h1>Manage Staff Users</h1>
-        <p>Register or remove coordinators and lab encargados</p>
+        <h1>Administrar Usuarios Staff</h1>
+        <p>Registrar o eliminar coordinadores y encargados de laboratorio</p>
       </div>
 
       <div className="users-crud-container">
         <div className="card add-user-card">
           <div className="add-user-header">
             <UserPlus size={32} className="add-user-icon" />
-            <h2 className="card-title">{editingId ? 'Edit User' : 'New User'}</h2>
+            <h2 className="card-title">{editingId ? 'Edit User' : 'Nuevo Usuario'}</h2>
           </div>
 
           {success && <div className="success-msg">{success}</div>}
@@ -111,15 +111,15 @@ export default function AddUser() {
 
             <div className="form-actions">
               <button type="submit" className="btn-primary flex items-center justify-center gap-2">
-                <Save size={18} />{editingId ? 'Update' : 'Register'}
+                <Save size={18} />{editingId ? 'Update' : 'Registrar'}
               </button>
-              <button type="button" className="btn-secondary" onClick={handleCancel}>Cancel</button>
+              <button type="button" className="btn-secondary" onClick={handleCancel}>Cancelar</button>
             </div>
           </form>
         </div>
 
         <div className="card users-list-card">
-          <h2 className="card-title" style={{ marginBottom: '1rem' }}>Active Users</h2>
+          <h2 className="card-title" style={{ marginBottom: '1rem' }}> Usuarios Registrados</h2>
           <div className="users-list">
             {usersList.map(u => (
               <div key={u.id} className={`user-item ${u.id === user.id ? 'current-user' : ''}`}>
