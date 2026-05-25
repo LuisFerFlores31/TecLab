@@ -9,6 +9,7 @@ import AddUser    from './pages/AddUser'
 import Alerts     from './pages/Alerts'
 import ManageLabs from './pages/ManageLabs'
 import Analytics from './pages/Analytics'
+import Exports from './pages/Exports'
 
 
 function PrivateRoute({ children }) {
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="inventory"     element={<Inventory />} />
           <Route path="analytics"     element={<Analytics />} />
           <Route path="alerts"        element={<Alerts />} />
+          <Route path="exports"       element={<Exports />} />
           <Route path="add"           element={<AddAsset />} />
           <Route path="edit/:id"      element={<AddAsset />} />
           <Route path="users"         element={<CoordinatorRoute><AddUser /></CoordinatorRoute>} />

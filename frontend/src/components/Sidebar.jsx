@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { Home, Package, PlusCircle, BarChart2, AlertTriangle, Settings, LogOut, Users, Beaker } from 'lucide-react'
+import { Home, Package, PlusCircle, BarChart2, AlertTriangle, Settings, LogOut, Users, Beaker, FileText } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import './Sidebar.css'
 
@@ -43,9 +43,9 @@ export default function Sidebar() {
         <NavLink to="/alerts" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
           <AlertTriangle size={20} /><span>Alertas</span>
         </NavLink>
-        <div className="nav-item disabled">
-          <Settings size={20} /><span>Configuración</span>
-        </div>
+        <NavLink to="/exports" className={({ isActive }) => isActive ? 'nav-item active' : 'nav-item'}>
+          <FileText size={20} /><span>Exports</span>
+        </NavLink>
       </nav>
 
       <div className="sidebar-footer">
