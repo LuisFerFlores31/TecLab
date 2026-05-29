@@ -59,8 +59,8 @@ docker-compose down -v
 ## Credenciales desarrollo
 | Usuario         | Email                      | Password        |
 |-----------------|----------------------------|-----------------|
-| Coordinador     | coordinador@teclab.mx      | Admin1234!      |
-| Encargado Bio   | bio@teclab.mx              | Encargado1234!  |
+| Coordinador     | coordinador@tec.mx      | Admin1234!      |
+| Encargado Bio   | bio@tec.mx              | Encargado1234!  |
 
 ## Commits
 - `feat:` nueva funcionalidad
