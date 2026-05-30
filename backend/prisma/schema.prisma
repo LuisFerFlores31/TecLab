@@ -59,6 +59,7 @@ model User {
   statusChanges StatusHistory[]
   assetsCreated Asset[]  @relation("AssetCreator")
   auditLogs     AssetAuditLog[]
+  exportJobs    ExportJob[]
 }
 
 model Laboratory {
@@ -70,6 +71,7 @@ model Laboratory {
   members      LabMember[]
   assets       Asset[]
   fieldSchema  LabFieldSchema[]
+  exportJobs   ExportJob[]
 }
 
 model LabMember {
@@ -160,4 +162,21 @@ enum AuditAction {
   status_cambiado
   dado_de_baja
   imagen_actualizada
+}
+
+// Jobs para exportaciones generadas en background
+model ExportJob {
+  id         Int      @id @default(autoincrement())
+  labId      Int
+  userId     Int
+  format     String   // csv | json
+  status     String   @default("pending") // pending | processing | done | failed
+  progress   Int      @default(0)
+  filePath   String?
+  error      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  lab  Laboratory @relation(fields: [labId], references: [id], onDelete: Cascade)
+  user User        @relation(fields: [userId], references: [id])
 }
