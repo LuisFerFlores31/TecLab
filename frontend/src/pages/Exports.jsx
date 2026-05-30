@@ -3,6 +3,8 @@ import { AlertTriangle, BarChart3, Download, FileText, RefreshCw, ShieldCheck, S
 import { api } from '../api/client'
 import './Exports.css'
 
+const API_BASE = `${import.meta.env.VITE_API_URL}/api`
+
 const STATUS_LABELS = {
   activo: 'Activo',
   mantenimiento: 'Mantenimiento',
@@ -17,6 +19,38 @@ function escapeCsv(value) {
 
 function downloadFile(filename, content, mimeType = 'text/csv;charset=utf-8;') {
   const blob = new Blob([content], { type: mimeType })
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+function parseContentDisposition(disposition) {
+  if (!disposition) return null
+  const match = disposition.match(/filename\*?=(?:UTF-8''|"?)([^";]+)/i)
+  return match ? decodeURIComponent(match[1]) : null
+}
+
+async function downloadServerFile({ jobId, format, fileBaseName }) {
+  const token = localStorage.getItem('teclab_token')
+  const res = await fetch(`${API_BASE}/exports/${jobId}/download`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+  })
+
+  if (!res.ok) {
+    const payload = await res.json().catch(() => ({}))
+    throw new Error(payload.error || 'No se pudo descargar el archivo')
+  }
+
+  const blob = await res.blob()
+  const fallbackName = `export-${fileBaseName || 'laboratorio'}-${jobId}.${format || 'csv'}`
+  const headerName = parseContentDisposition(res.headers.get('content-disposition'))
+  const filename = headerName || fallbackName
+
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
@@ -128,10 +162,115 @@ export default function Exports() {
       description: 'Útil para respaldos e integraciones.',
       onClick: handleExportJson,
     },
+    {
+      icon: FileText,
+      title: 'Exportar desde servidor',
+      description: 'Encola una exportación en el backend y te permite descargarla cuando esté lista.',
+      onClick: () => handleExportServer('csv'),
+    },
   ]
+
+  const [serverStatus, setServerStatus] = useState(null)
+  const [serverProgress, setServerProgress] = useState(null)
+  const [showToast, setShowToast] = useState(false)
+
+  useEffect(() => {
+    if (!serverStatus) {
+      setShowToast(false)
+      return
+    }
+
+    setShowToast(true)
+
+    if (serverStatus === 'completed' || serverStatus === 'failed') {
+      const timer = setTimeout(() => {
+        setShowToast(false)
+        if (serverStatus === 'completed') {
+          setServerStatus(null)
+          setServerProgress(null)
+        }
+      }, 2500)
+
+      return () => clearTimeout(timer)
+    }
+  }, [serverStatus])
+
+  const toastMessage = useMemo(() => {
+    const percent = typeof serverProgress === 'number' ? ` ${serverProgress}%` : ''
+    switch (serverStatus) {
+      case 'enqueuing':
+        return 'Encolando exportacion...'
+      case 'pending':
+        return `Exportacion en cola...${percent}`
+      case 'processing':
+        return `Generando archivo...${percent}`
+      case 'downloading':
+        return `Descargando archivo...${percent}`
+      case 'completed':
+        return 'Descarga iniciada.'
+      case 'failed':
+        return 'La exportacion fallo.'
+      default:
+        return ''
+    }
+  }, [serverStatus, serverProgress])
+
+  async function handleExportServer(format = 'csv') {
+    if (!activeLab) return alert('Selecciona un laboratorio')
+
+    try {
+      setServerStatus('enqueuing')
+      setServerProgress(0)
+      const data = await api.post('/exports', { labId: activeLab.id, format })
+      const jobId = data.jobId
+      setServerStatus('pending')
+
+      const poll = setInterval(async () => {
+        try {
+          const statusResp = await api.get(`/exports/${jobId}/status`)
+          const status = statusResp.job.status
+          setServerStatus(status)
+          setServerProgress(statusResp.job.progress ?? 0)
+          if (status === 'done') {
+            clearInterval(poll)
+            setServerStatus('downloading')
+            await downloadServerFile({
+              jobId,
+              format: statusResp.job.format || format,
+              fileBaseName,
+            })
+            setServerProgress(100)
+            setServerStatus('completed')
+          }
+          if (status === 'failed') {
+            clearInterval(poll)
+          }
+        } catch (err) {
+          console.error(err)
+        }
+      }, 2000)
+    } catch (err) {
+      console.error(err)
+      alert('Error encolando exportación: ' + err.message)
+      setServerStatus(null)
+    }
+  }
 
   return (
     <div className="exports-page">
+      {showToast && serverStatus && (
+        <div className={`export-toast ${serverStatus}`}>
+          {serverStatus === 'failed' ? <AlertTriangle size={16} /> : <Download size={16} />}
+          <span>{toastMessage}</span>
+          {serverStatus !== 'completed' && serverStatus !== 'failed' && (
+            <div
+              className="export-toast__progress"
+              aria-hidden="true"
+              style={{ width: `${Math.min(100, Math.max(0, serverProgress ?? 0))}%` }}
+            />
+          )}
+        </div>
+      )}
       <div className="page-header exports-header">
         <div>
           <h1>Exportaciones</h1>
@@ -234,6 +373,7 @@ export default function Exports() {
             <ShieldCheck size={16} />
             <p>Las exportaciones se generan localmente en el navegador.</p>
           </div>
+
 
           {error && (
             <div className="export-error">

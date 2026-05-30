@@ -11,6 +11,7 @@ const assetRoutes     = require('./modules/assets/assets.routes')
 const userRoutes      = require('./modules/users/users.routes')
 const alertRoutes     = require('./modules/alerts/alerts.routes')
 const analyticsRoutes = require('./modules/analytics/analytics.routes')
+const exportRoutes    = require('./modules/exports/exports.routes')
 
 const app  = express()
 const PORT = process.env.PORT || 3001
@@ -25,8 +26,12 @@ app.use('/api/assets',    assetRoutes)
 app.use('/api/users',     userRoutes)
 app.use('/api/alerts',    alertRoutes)
 app.use('/api/analytics', analyticsRoutes)
+app.use('/api/exports', exportRoutes)
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }))
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`))
 require('./lib/cron')
+// start background worker for export jobs
+const { startWorker } = require('./lib/exportWorker')
+startWorker()
