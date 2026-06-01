@@ -7,12 +7,21 @@ async function login(email, password) {
     where: { email },
     include: { labMembers: { select: { labId: true } } }
   })
-
+//solo para debug, eliminar en producción
+  console.log(`[DEBUG] Login attempt for ${email}`)
+  console.log(`[DEBUG] User found: ${user ? 'YES' : 'NO'}`)
+  if (user) {
+    console.log(`[DEBUG] User isActive: ${user.isActive}`)
+    console.log(`[DEBUG] User passwordHash: ${user.passwordHash}`)
+  }
+// Fin de logs de depuración
   if (!user || !user.isActive) {
     throw new Error('Credenciales inválidas')
   }
 
   const valid = await bcrypt.compare(password, user.passwordHash)
+  console.log(`[DEBUG] Password valid: ${valid}`) //solo para debug, eliminar en producción
+  
   if (!valid) throw new Error('Credenciales inválidas')
 
   const token = jwt.sign(

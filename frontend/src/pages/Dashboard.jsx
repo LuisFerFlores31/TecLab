@@ -8,6 +8,16 @@ export default function Dashboard() {
   const { user } = useAuth()
   const [labs,    setLabs]    = useState([])
   const [loading, setLoading] = useState(true)
+  const [query,   setQuery]   = useState('')
+
+  const filteredLabs = labs.filter(lab => {
+    const term = query.trim().toLowerCase()
+    if (!term) return true
+
+    const labName = lab.name?.toLowerCase() ?? ''
+    const departmentName = lab.department?.name?.toLowerCase() ?? ''
+    return labName.includes(term) || departmentName.includes(term)
+  })
 
   useEffect(() => {
     api.get('/labs')
@@ -18,8 +28,18 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard">
+      <div className="page-header">
+        <h1>Hola {user?.name || 'usuario'}</h1>
+        <p>Bienvenido de vuelta al panel de laboratorio</p>
+      </div>
+
       <div className="search-bar">
-        <input type="text" placeholder="Buscar Laboratorios..." />
+        <input
+          type="text"
+          placeholder="Buscar Laboratorios..."
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+        />
       </div>
 
       <div className="kpi-grid">
@@ -52,7 +72,7 @@ export default function Dashboard() {
         <h3>Laboratorios del sistema</h3>
         <div className="activity-list">
           {loading && <p style={{ padding: '1rem', color: 'var(--text-muted)' }}>Cargando...</p>}
-          {!loading && labs.map(lab => (
+          {!loading && filteredLabs.map(lab => (
             <div key={lab.id} className="activity-item">
               <div className="activity-details">
                 <p className="activity-user">{lab.name}</p>
@@ -60,7 +80,7 @@ export default function Dashboard() {
               </div>
             </div>
           ))}
-          {!loading && labs.length === 0 && (
+          {!loading && filteredLabs.length === 0 && (
             <p style={{ padding: '1rem', color: 'var(--text-muted)' }}>No hay laboratorios registrados.</p>
           )}
         </div>

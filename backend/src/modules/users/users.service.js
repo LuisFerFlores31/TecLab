@@ -14,10 +14,16 @@ async function createUser(data) {
   if (exists) throw Object.assign(new Error('Email ya registrado'), { status: 409 })
 
   const passwordHash = await bcrypt.hash(password, 10)
-  return prisma.user.create({
+  console.log(`[DEBUG] Creating user ${email} with password hash: ${passwordHash}`) //solo para debug, eliminar en producción
+  
+  const created = await prisma.user.create({
     data: { name, email, passwordHash, role },
-    select: { id: true, name: true, email: true, role: true }
+    select: { id: true, name: true, email: true, role: true, labMembers: { select: { labId: true } } }
   })
+  
+  console.log(`[DEBUG] User created: ${JSON.stringify(created)}`) //solo para debug, eliminar en producción
+
+  return created
 }
 
 async function deactivateUser(id) {
