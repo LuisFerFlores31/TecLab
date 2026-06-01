@@ -31,14 +31,23 @@ export default function AddUser() {
     setSuccess(''); setError('')
     try {
       if (editingId) {
-        // edición: por ahora solo soportamos crear y desactivar
-        // patch de datos básicos lo agregamos en siguiente iteración
-        setSuccess('Edición próximamente.')
-      } else {
-        await api.post('/users', { name, email, password, role })
-        setSuccess(`Usuario ${name} registrado.`)
+        if (!name || !email || !role) {
+          setError('Nombre, email y rol son requeridos')
+          return
+        }
+        const updateData = { name, email, role }
+        if (password) updateData.password = password
+        
+        await api.patch(`/users/${editingId}`, updateData)
         handleCancel()
         loadUsers()
+        setSuccess('Usuario actualizado correctamente.')
+        
+      } else {
+        await api.post('/users', { name, email, password, role })
+        handleCancel()
+        loadUsers()
+        setSuccess(`Usuario ${name} registrado.`)
       }
     } catch (err) {
       setError(err.message)
@@ -77,7 +86,7 @@ export default function AddUser() {
         <div className="card add-user-card">
           <div className="add-user-header">
             <UserPlus size={32} className="add-user-icon" />
-            <h2 className="card-title">{editingId ? 'Edit User' : 'Nuevo Usuario'}</h2>
+            <h2 className="card-title">{editingId ? 'Editar Usuario' : 'Nuevo Usuario'}</h2>
           </div>
 
           {success && <div className="success-msg">{success}</div>}
@@ -105,13 +114,13 @@ export default function AddUser() {
             </div>
 
             <div className="form-group full-width">
-              <label>Contraseña <span className="required">*</span></label>
+              <label>Contraseña {!editingId && <span className="required">*</span>} {editingId && <span style={{ color: 'var(--text-muted)' }}>(opcional)</span>}</label>
               <input type="password" value={password} onChange={e => setPassword(e.target.value)} required={!editingId} />
             </div>
 
             <div className="form-actions">
               <button type="submit" className="btn-primary flex items-center justify-center gap-2">
-                <Save size={18} />{editingId ? 'Update' : 'Registrar'}
+                <Save size={18} />{editingId ? 'Actualizar Usuario' : 'Registrar'}
               </button>
               <button type="button" className="btn-secondary" onClick={handleCancel}>Cancelar</button>
             </div>

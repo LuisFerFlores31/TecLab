@@ -10,6 +10,7 @@ router.use(coordinatorOnly)
 
 router.get('/',       ctrl.getUsers)
 router.post('/',      ctrl.createUser)
+router.patch('/:id',  ctrl.updateUser)
 router.delete('/:id', ctrl.deactivateUser)
 
 module.exports = router
