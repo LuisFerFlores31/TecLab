@@ -26,6 +26,30 @@ async function createUser(data) {
   return created
 }
 
+async function updateUser(id, data) {
+  const { name, email, password, role } = data
+  const updateData = {}
+  
+  if (name) updateData.name = name
+  if (email) {
+    const exists = await prisma.user.findUnique({ where: { email } })
+    if (exists && exists.id !== id) throw Object.assign(new Error('Email ya registrado'), { status: 409 })
+    updateData.email = email
+  }
+  if (role) updateData.role = role
+  if (password) {
+    const passwordHash = await bcrypt.hash(password, 10)
+    console.log(`[DEBUG] Updating password for user ${id} with hash: ${passwordHash}`) //solo para debug, eliminar en producción
+    updateData.passwordHash = passwordHash
+  }
+  
+  return prisma.user.update({
+    where: { id },
+    data: updateData,
+    select: { id: true, name: true, email: true, role: true, labMembers: { select: { labId: true } } }
+  })
+}
+
 async function deactivateUser(id) {
   return prisma.user.update({
     where: { id },
@@ -33,4 +57,4 @@ async function deactivateUser(id) {
   })
 }
 
-module.exports = { getUsers, createUser, deactivateUser }
+module.exports = { getUsers, createUser, updateUser, deactivateUser }

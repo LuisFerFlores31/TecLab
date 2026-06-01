@@ -21,6 +21,19 @@ async function createUser(req, res) {
   }
 }
 
+async function updateUser(req, res) {
+  const { name, email, password, role } = req.body
+  if (!name && !email && !password && !role) {
+    return res.status(400).json({ error: 'Al menos un campo debe ser proporcionado' })
+  }
+  try {
+    const user = await svc.updateUser(parseInt(req.params.id), { name, email, password, role })
+    res.json(user)
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message })
+  }
+}
+
 async function deactivateUser(req, res) {
   try {
     await svc.deactivateUser(parseInt(req.params.id))
@@ -30,4 +43,4 @@ async function deactivateUser(req, res) {
   }
 }
 
-module.exports = { getUsers, createUser, deactivateUser }
+module.exports = { getUsers, createUser, updateUser, deactivateUser }
