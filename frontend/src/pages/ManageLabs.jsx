@@ -199,7 +199,7 @@ function SchemaManager({ lab, onClose }) {
 }
 
 // ── Sub-componente: gestión de encargados ─────────────────────────────────────
-function MembersManager({ lab, encargados, onClose, onUpdate }) {
+function MembersManager({ lab, encargados, onClose, onUpdate, onSuccess }) {
   const [loading, setLoading] = useState(false)
   const [error,   setError]   = useState('')
 
@@ -211,7 +211,9 @@ function MembersManager({ lab, encargados, onClose, onUpdate }) {
     setLoading(true); setError('')
     try {
       await api.post(`/labs/${lab.id}/members`, { userId })
-      onUpdate()
+      await onUpdate()
+      onSuccess('Encargado asignado al laboratorio.')
+      onClose()
     } catch (err) { setError(err.message) }
     finally { setLoading(false) }
   }
@@ -219,8 +221,10 @@ function MembersManager({ lab, encargados, onClose, onUpdate }) {
   async function remove(userId) {
     setLoading(true); setError('')
     try {
-      await api.delete(`/labs/${lab.id}/members`, { body: JSON.stringify({ userId }) })
-      onUpdate()
+      await api.delete(`/labs/${lab.id}/members`, { userId })
+      await onUpdate()
+      onSuccess('Encargado eliminado del laboratorio.')
+      onClose()
     } catch (err) { setError(err.message) }
     finally { setLoading(false) }
   }
@@ -338,6 +342,7 @@ export default function ManageLabs() {
     try {
       await api.delete(`/labs/${lab.id}`)
       await loadAll()
+      setSuccess(`Laboratorio "${lab.name}" borrado.`)
     } catch (err) { setError(err.message) }
   }
 
@@ -414,7 +419,7 @@ export default function ManageLabs() {
       </div>
 
       {schemaLab  && <SchemaManager  lab={schemaLab}  onClose={() => { setSchemaLab(null);  loadAll() }} />}
-      {membersLab && <MembersManager lab={membersLab} encargados={encargados} onClose={() => setMembersLab(null)} onUpdate={loadAll} />}
+      {membersLab && <MembersManager lab={membersLab} encargados={encargados} onClose={() => setMembersLab(null)} onUpdate={loadAll} onSuccess={setSuccess} />}
     </div>
   )
 }
