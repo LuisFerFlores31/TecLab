@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import './Login.css'
 
-export default function Login() {
+export default function Login({ redirectTo = '/inventory' }) {
   const { login } = useAuth()
+  const navigate = useNavigate()
   const [email,    setEmail]    = useState('')
   const [password, setPassword] = useState('')
   const [error,    setError]    = useState('')
@@ -15,7 +17,7 @@ export default function Login() {
     setLoading(true)
     try {
       await login(email, password)
-      // App.jsx redirige solo cuando user cambia
+      navigate(redirectTo)
     } catch (err) {
       setError(err.message)
     } finally {

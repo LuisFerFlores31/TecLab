@@ -26,13 +26,15 @@ function CoordinatorRoute({ children }) {
 
 export default function App() {
   const { user } = useAuth()
+  const postLoginPath = '/dashboard'
 
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
+        <Route path="/login" element={user ? <Navigate to={postLoginPath} replace /> : <Login redirectTo={postLoginPath} />} />
         <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
           <Route index                element={<Dashboard />} />
+          <Route path="dashboard"     element={<Dashboard />} />
           <Route path="inventory"     element={<Inventory />} />
           <Route path="analytics"     element={<Analytics />} />
           <Route path="alerts"        element={<Alerts />} />
