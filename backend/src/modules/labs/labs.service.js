@@ -2,6 +2,7 @@ const prisma = require('../../lib/prisma')
 
 async function getAllLabs() {
   return prisma.laboratory.findMany({
+    where: { isActive: true },
     include: {
       department: true,
       members:    { include: { user: { select: { id: true, name: true, email: true } } } }
@@ -12,7 +13,7 @@ async function getAllLabs() {
 
 async function getLabsByIds(labIds) {
   return prisma.laboratory.findMany({
-    where:   { id: { in: labIds } },
+    where:   { id: { in: labIds }, isActive: true },
     include: {
       department: true,
       members:    { include: { user: { select: { id: true, name: true, email: true } } } }
@@ -55,7 +56,10 @@ async function deleteLab(labId) {
     where: { labId },
     data:  { isActive: false, status: 'baja' }
   })
-  return prisma.laboratory.delete({ where: { id: labId } })
+  return prisma.laboratory.update({
+    where: { id: labId },
+    data:  { isActive: false }
+  })
 }
 
 // ── Schema dinámico ────────────────────────────────────────────────────────────
