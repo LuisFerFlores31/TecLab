@@ -48,34 +48,76 @@ Este sistema fue diseñado para digitalizar el control de inventario de los labo
 * **Reportes visuales:** Indicadores y gráficas para consultar el estado actual del laboratorio.
 * **Roles de usuario:** Acceso diferenciado para administradores (Coordinadores) y personal autorizado (Laboratoristas).
 
-## Requisitos
+## Instalación con Docker
+
+### Requisitos
 - Docker Desktop
 - Git
 
-### Primera vez
+### 1. Obtener el código
+```bash
+git clone https://github.com/LuisFerFlores31/TecLab.git
+cd Tec-lab
+```
+
+### 2. Crear el archivo de variables de entorno
+El sistema usa un único archivo `.env` en la raíz del proyecto. Toma como base `.env.example` y completa los valores necesarios:
+
+```bash
+copy .env.example .env
+```
+
+Si prefieres hacerlo manualmente, asegúrate de definir:
+- `POSTGRES_USER`
+- `POSTGRES_PASSWORD`
+- `POSTGRES_DB`
+- `JWT_SECRET`
+- `PORT` (por defecto `3001`)
+- `VITE_API_URL` (por defecto `http://localhost:3001`)
+
+### 3. Construir y levantar los contenedores
 ```bash
 docker-compose up --build
 ```
 
-### Correr seed (primera vez o al resetear BD)
+Al iniciar, Docker hace lo siguiente automáticamente:
+- crea la base de datos en PostgreSQL
+- genera el cliente de Prisma
+- aplica las migraciones pendientes
+- arranca el backend y el frontend
+
+### 4. Cargar datos iniciales
+Ejecuta el seed solo la primera vez o cuando borres la base de datos:
+
 ```bash
 docker-compose exec backend node src/lib/seed.js
 ```
 
-### Levantar
+### Operación diaria
+Para levantar el sistema después de la primera instalación:
+
 ```bash
 docker-compose up
 ```
 
-### Apagar
+Para apagar los contenedores:
+
 ```bash
 docker-compose down
 ```
 
-### Apagar y borrar datos (reset completo)
+Para apagar y borrar los datos persistidos de la base de datos:
+
 ```bash
 docker-compose down -v
 ```
+
+### Flujo resumido
+1. Clona el repositorio.
+2. Crea y completa `.env`.
+3. Ejecuta `docker-compose up --build`.
+4. Corre el seed una sola vez.
+5. Entra desde el navegador a las URLs del sistema.
 
 ## URLs
 | Servicio  | URL                    |
